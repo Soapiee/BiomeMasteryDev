@@ -40,9 +40,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <outputFile>D:\Coding\Test Servers\1.21.4 R3\Plugins\Wings.jar</outputFile>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
