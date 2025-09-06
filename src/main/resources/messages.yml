@@ -1,0 +1,14 @@
+Error_Incorrect_Command_Usage: "&c/economy help"
+Error_Player_Not_Found: "&cPlayer not found."
+Error_Reload_Messages: "&cError reloading the messages.yml"
+Successful_Reload_Messages: "&aSuccessfully reloaded"
+Error_No_Permission: "&cYou do not have permission to use this command"
+Player_Help_Command:
+  - "&2/economy money &7- shows your balance"
+  - "&2/economy multi &7- shows your multiplier"
+Admin_Help_Command:
+  - "&#01d54a/economy [money|multi] <player> &7- shows balance/multiplier value"
+  - "&#01d54a/economy [money|multi] <player> set <value>"
+  - "&#01d54a/economy [money|multi] <player> give <value>"
+  - "&#01d54a/economy [money|multi] <player> take <value>"
+  - "&#01d54a/economy [money|multi] <player> reset"

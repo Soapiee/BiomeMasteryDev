@@ -1,0 +1,21 @@
+name: BiomeMastery
+version: '1.0.0'
+prefix: BiomeMastery
+main: me.soapiee.common.BiomeMastery
+api-version: '1.13'
+
+commands:
+  admin:
+    description: 'admin commands'
+    usage: 'admin reload|contents'
+    permission: placeholder.admin
+  placeholder:
+    description: 'placeholder commands'
+    usage: 'placeholder help'
+    permission: placeholder.placeholder
+
+permissions:
+  placeholder.placeholder:
+    default: true
+  placeholder.admin:
+    default: true

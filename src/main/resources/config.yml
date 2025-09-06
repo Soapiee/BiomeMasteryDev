@@ -1,0 +1,64 @@
+# Datastorage Settings
+database:
+  enabled: false # If false, data is stored as files
+  host: "localhost"
+  port: 3306
+  database: "biomemastery"
+  username: "root"
+  password: ""
+
+
+default_settings:
+  # List the worlds you want this plugin to work on
+  enabled_worlds:
+    - 'exampleworld'
+  levels:
+    '1':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: potion # Valid types: potion, effect, item, permission, command, xp, currency
+      reward_item: haste:2 #potion effect:amplifier:duration
+    '2':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: potion # Valid types: potion, effect, item, permission, command, xp, currency
+      reward_item: haste:2 #potion effect:amplifier:duration
+
+
+# Anything set in here will override the default settings
+# Use this if you want specific perks for a certain biome
+# Make sure the biome name is from this list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Biome.html
+biomes:
+  PLAINS:
+    # permanent rewards are rewards that a player can activate/deactivate wherever and whenever they want
+    #
+    # temporary rewards are rewards that are only active when the player is in that biome
+    # For example, if a player is at level 2 for the plains biome,
+    # they will get night vision every single time they're in that biome in the future
+
+    '1':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: potion # Valid types: potion, effect, item, permission, command, xp, currency
+      reward_item: haste:2 #potion effect:amplifier:duration
+    '2':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: effect # Valid types: potion, effect, item, permission, command, xp, currency
+      reward_item: night_vision # Valid effects: water_walker, night_vision
+    '3':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: item
+      reward_item: apple:5 # material:quantity
+    '4':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: currency
+      reward_item: 2000 #amount
+    '5':
+      type: temporary # Valid types: temporary or permanent
+      target_duration: 60 # seconds
+      reward_type: command
+      reward_item: give %player% apple 2 # use placeholder %player%
+
