@@ -28,7 +28,7 @@ public final class BiomeMastery extends JavaPlugin {
 
     //TODO: Save level progress on BiomeChangeEvent
     //TODO: Runnable > Every 1 minute and +1 progress to each online player
-    //TODO: Runnable > Every X time, check progress
+    //TODO: Runnable > Every X time, check progress (add config setting)
 
 
     @Override
