@@ -14,8 +14,10 @@ import java.util.Date;
 
 
 public class Logger {
+
     private final File logFile;
     private final boolean debugMode;
+
     public Logger(BiomeMastery main) {
         logFile = new File(main.getDataFolder() + File.separator + "logger.log");
         if (!logFile.exists()) {
@@ -68,4 +70,5 @@ public class Logger {
             this.colour = colour;
         }
     }
+
 }

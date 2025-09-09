@@ -126,4 +126,5 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         }
         return results.stream().filter(completion -> completion.startsWith(args[args.length - 1])).collect(Collectors.toList());
     }
+
 }

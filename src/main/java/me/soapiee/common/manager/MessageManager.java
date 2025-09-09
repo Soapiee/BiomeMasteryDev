@@ -85,4 +85,5 @@ public class MessageManager {
                 .replace("%round_countdown%", replacement)
                 .replace("%game_ID%", String.valueOf(integer));
     }
+
 }

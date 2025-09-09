@@ -35,7 +35,7 @@ public final class BiomeMastery extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        playerCache = new PlayerCache();
+        playerCache = new PlayerCache(Bukkit.getServer().getOfflinePlayers());
         messageManager = new MessageManager(this);
         logger = new Logger(this);
 
@@ -94,4 +94,5 @@ public final class BiomeMastery extends JavaPlugin {
     public Logger getCustomLogger() {
         return logger;
     }
+
 }

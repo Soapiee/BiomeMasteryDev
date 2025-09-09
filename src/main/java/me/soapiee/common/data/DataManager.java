@@ -93,4 +93,5 @@ public class DataManager {
             getPlayerData(uuid).saveData(async);
         }
     }
+
 }

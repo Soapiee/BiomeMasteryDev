@@ -1,6 +1,5 @@
 package me.soapiee.common.util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -13,9 +12,9 @@ public class PlayerCache {
 
     private final Set<OfflinePlayer> offlinePlayers;
 
-    public PlayerCache() {
+    public PlayerCache(OfflinePlayer[] offlinePlayers) {
         this.offlinePlayers = new HashSet<>();
-        this.offlinePlayers.addAll(Arrays.asList(Bukkit.getServer().getOfflinePlayers()));
+        this.offlinePlayers.addAll(Arrays.asList(offlinePlayers));
     }
 
     public void addOfflinePlayer(OfflinePlayer offlinePlayer) {
@@ -49,4 +48,5 @@ public class PlayerCache {
     public Set<OfflinePlayer> getList() {
         return this.offlinePlayers;
     }
+
 }

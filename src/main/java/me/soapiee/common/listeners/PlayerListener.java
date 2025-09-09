@@ -136,4 +136,5 @@ public class PlayerListener implements Listener {
 
         ((Player) player).sendMessage(Utils.colour(ChatColor.GREEN + "You leveled up to level " + event.getNewLevel()));
     }
+
 }

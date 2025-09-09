@@ -51,4 +51,5 @@ public class VaultHook {
 
         return permissions.playerAdd(null, target, permission);
     }
+
 }
