@@ -26,9 +26,32 @@ public final class BiomeMastery extends JavaPlugin {
     private Logger logger;
 
 
-    //TODO: Save level progress on BiomeChangeEvent
-    //TODO: Runnable > Every 1 minute and +1 progress to each online player
-    //TODO: Runnable > Every X time, check progress (add config setting)
+    //TODO:
+    // A list of recorded biomes is created on server load (if blacklist, all biomes are added, then the blacklisted ones are removed)
+    //    (if whitelist is used, only those in the whitelist are added)
+    //    error check: make sure all specificed biomes fit in the list created. If not, throw error
+    // -
+    // On player join,
+    //     Biome is establised. Biome is checked against recorded biomes list.
+    //     If its a valid biome then entry time is recorded.
+    // Every X time,
+    //    Player is checked if they're within a valid biome.
+    //    If true: players progress is checked. Progress = threshold - (seconds between now + entry time).
+    //    If progress is <=0 then they level up and a new entry time is set.
+    // -
+    // During the biome change event,
+    //    Player is checked if they're within a valid biome.
+    //    If true: seconds between now + entry time are added to the players progress
+    //    players progress is checked
+    //    If progress is <=0 then they level up in the old biome.
+    //    A new entry time is set for the new biome and the entry time for the old biome is cleared
+    // -
+    // On player quit, (or simple call the biome change event)
+    //    Player is checked if they're within a valid biome.
+    //    If true: seconds between now + entry time are added to the players progress
+    //    players progress is checked
+    //    If progress is <=0 then they level up in the old biome.
+    //    A new entry time is set for the new biome and the entry time for the old biome is cleared
 
 
     @Override

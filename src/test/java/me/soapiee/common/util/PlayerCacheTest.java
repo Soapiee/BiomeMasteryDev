@@ -50,11 +50,11 @@ class PlayerCacheTest {
 
     @Test
     void givenOfflinePlayers_WhenGetList_ThenReturn() {
-        Set<OfflinePlayer> expectedPlaterList = new HashSet<>(Arrays.asList(offlinePlayers));
+        Set<OfflinePlayer> expectedPlayerList = new HashSet<>(Arrays.asList(offlinePlayers));
         Set<OfflinePlayer> actualPlayerList = PLAYER_CACHE.getList();
 
         assertEquals(actualPlayerList.size(), 2);
-        assertEquals(actualPlayerList, expectedPlaterList);
+        assertEquals(actualPlayerList, expectedPlayerList);
     }
 
     private static Stream<Arguments> getPlayersArgs() {

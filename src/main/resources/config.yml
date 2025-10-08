@@ -9,9 +9,23 @@ database:
 
 
 default_settings:
+  # In seconds, how often should players be checked for the biome duration threshold
+  # Recommended no less than 10 seconds. Bigger servers should have a higher interval
+  update_interval: 30
+
   # List the worlds you want this plugin to work on
   enabled_worlds:
     - 'exampleworld'
+
+  # Set this to true if you want to use the blacklist list as a whitelist instead
+  use_blacklist_as_whitelist: false
+  # Biomes that you don't want rewards for
+  biomes_blacklist:
+    - DEEP_COLD_OCEAN
+
+  # The default settings for each biomes rewards/levels.
+  # If the Biome is not specified in the "biomes" section
+  # these settings will automatically apply.
   levels:
     '1':
       type: temporary # Valid types: temporary or permanent
@@ -29,13 +43,13 @@ default_settings:
 # Use this if you want specific perks for a certain biome
 # Make sure the biome name is from this list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Biome.html
 biomes:
-  PLAINS:
-    # permanent rewards are rewards that a player can activate/deactivate wherever and whenever they want
-    #
-    # temporary rewards are rewards that are only active when the player is in that biome
-    # For example, if a player is at level 2 for the plains biome,
-    # they will get night vision every single time they're in that biome in the future
+  # permanent rewards are rewards that a player can activate/deactivate wherever and whenever they want
+  #
+  # temporary rewards are rewards that are only active when the player is in that biome
+  # For example, if a player is at level 2 for the plains biome,
+  # they will get night vision every single time they're in that biome in the future
 
+  PLAINS:
     '1':
       type: temporary # Valid types: temporary or permanent
       target_duration: 60 # seconds
@@ -61,4 +75,31 @@ biomes:
       target_duration: 60 # seconds
       reward_type: command
       reward_item: give %player% apple 2 # use placeholder %player%
+
+  FLOWER_FOREST:
+    '1':
+      type: temporary
+      target_duration: 60
+      reward_type: potion
+      reward_item: haste:2
+    '2':
+      type: temporary
+      target_duration: 60
+      reward_type: effect
+      reward_item: night_vision
+    '3':
+      type: temporary
+      target_duration: 60
+      reward_type: item
+      reward_item: apple:5
+    '4':
+      type: temporary
+      target_duration: 60
+      reward_type: currency
+      reward_item: 2000
+    '5':
+      type: temporary
+      target_duration: 60
+      reward_type: command
+      reward_item: give %player% apple 2
 
