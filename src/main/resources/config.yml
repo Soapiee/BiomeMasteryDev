@@ -31,12 +31,12 @@ default_settings:
   # these settings will automatically apply.
   levels:
     '1':
-      type: temporary # Valid types: temporary or permanent
+      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
       target_duration: 60 # seconds
       reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
       reward_item: haste:2 #potion effect:amplifier:duration
     '2':
-      type: temporary # Valid types: temporary or permanent
+      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
       target_duration: 60 # seconds
       reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
       reward_item: haste:2 #potion effect:amplifier:duration
@@ -54,30 +54,32 @@ biomes:
 
   PLAINS:
     '1':
-      type: temporary # Valid types: temporary or permanent
+      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
       target_duration: 60 # seconds
       reward_type: potion # Valid types: potion, effect, item, permission, command, xp, currency
       reward_item: haste:2 #potion effect:amplifier:duration
     '2':
-      type: temporary # Valid types: temporary or permanent
+      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
       target_duration: 60 # seconds
       reward_type: effect # Valid types: potion, effect, item, permission, command, xp, currency
       reward_item: night_vision # Valid effects: water_walker, night_vision
     '3':
-      type: temporary # Valid types: temporary or permanent
       target_duration: 60 # seconds
       reward_type: item
       reward_item: apple:5 # material:quantity
     '4':
-      type: temporary # Valid types: temporary or permanent
       target_duration: 60 # seconds
       reward_type: currency
       reward_item: 2000 #amount
     '5':
-      type: temporary # Valid types: temporary or permanent
+      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
       target_duration: 60 # seconds
       reward_type: command
       reward_item: give %player% apple 2 # use placeholder %player%
+    '6':
+      target_duration: 60 # seconds
+      reward_type: xp
+      reward_item: 10 # how many experience levels to give
 
   FLOWER_FOREST:
     '1':
@@ -98,8 +100,8 @@ biomes:
     '4':
       type: temporary
       target_duration: 60
-      reward_type: currency
-      reward_item: 2000
+      reward_type: xp
+      reward_item: 10
     '5':
       type: temporary
       target_duration: 60

@@ -1,7 +1,8 @@
 package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.rewards.Reward;
+import me.soapiee.common.data.rewards.Rewards;
+import me.soapiee.common.data.rewards.types.Reward;
 import me.soapiee.common.logic.Checker;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Utils;
@@ -66,13 +67,13 @@ public class DataManager {
         }
 
         setDefaultSettings(Bukkit.getConsoleSender());
-        createBiomeData();
+        createBiomeData(Bukkit.getConsoleSender());
         startChecker();
     }
 
     public void reload(CommandSender sender) {
         setDefaultSettings(sender);
-        createBiomeData();
+        createBiomeData(sender);
         startChecker();
     }
 
@@ -90,7 +91,9 @@ public class DataManager {
         defaultRewards.clear();
         for (String key : config.getConfigurationSection("default_settings.levels").getKeys(false)) {
             defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + "target_duration"));
-            defaultRewards.put(Integer.parseInt(key), new Reward(main, "default_settings.levels." + key + "."));
+
+            //TODO: See BiomeData todo
+            defaultRewards.put(Integer.parseInt(key), new Rewards(main, sender, "default_settings.levels." + key + "."));
         }
 
         //Make list of enabled biomes + create the biome data
@@ -133,12 +136,12 @@ public class DataManager {
         return whitelist;
     }
 
-    private void createBiomeData() {
+    private void createBiomeData(CommandSender sender) {
         //Loops through the list of enabled biomes. Find it in the biomes config section, if it doesnt exist then set default settings
         for (Biome enabledBiome : enabledBiomes) {
             boolean isDefault = main.getConfig().getConfigurationSection("biomes." + enabledBiome.name()) == null;
 
-            BiomeData biomeData = new BiomeData(main, enabledBiome, isDefault);
+            BiomeData biomeData = new BiomeData(main, enabledBiome, isDefault, sender);
             biomeDataMap.put(enabledBiome, biomeData);
         }
     }
