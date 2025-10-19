@@ -1,6 +1,5 @@
 package me.soapiee.common.data.rewards.types;
 
-import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.RewardType;
 import me.soapiee.common.hooks.VaultHook;
 import org.bukkit.entity.Player;
@@ -12,9 +11,9 @@ public class PermissionReward extends Reward {
     private final VaultHook vaultHook;
     private final ArrayList<String> permissions;
 
-    public PermissionReward(BiomeMastery main, ArrayList<String> permission) {
-        super(main, RewardType.PERMISSION);
-        this.vaultHook = main.getVaultHook();
+    public PermissionReward(VaultHook vaultHook, ArrayList<String> permission) {
+        super(RewardType.PERMISSION);
+        this.vaultHook = vaultHook;
         this.permissions = permission;
     }
 

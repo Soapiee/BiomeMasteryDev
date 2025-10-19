@@ -1,16 +1,22 @@
 package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.rewards.Rewards;
-import me.soapiee.common.data.rewards.types.Reward;
+import me.soapiee.common.data.rewards.EffectType;
+import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.data.rewards.types.*;
+import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.Checker;
+import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionType;
 
 import javax.naming.CommunicationException;
 import java.io.File;
@@ -25,61 +31,55 @@ import java.util.UUID;
 
 public class DataManager {
 
-    private final BiomeMastery main;
-    private final HikariCPConnection database;
+    private final MessageManager messageManager;
     private final Logger logger;
-    private final String dataSaveType;
+    private final VaultHook vaultHook;
+    private final FileConfiguration config;
 
-    private final HashMap<UUID, PlayerData> playerDataMap;
-    private final HashMap<Biome, BiomeData> biomeDataMap;
-    private final List<String> enabledWorlds;
-    private final List<Biome> enabledBiomes;
-    private final HashMap<Integer, Integer> defaultLevels;
-    private final HashMap<Integer, Reward> defaultRewards;
+    private String dataSaveType;
+    private HikariCPConnection database;
+
+    private final HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
+    private final HashMap<Biome, BiomeData> biomeDataMap = new HashMap<>();
+    private final List<String> enabledWorlds = new ArrayList<>();
+    private final List<Biome> enabledBiomes = new ArrayList<>();
+    private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
+    private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
     private int updateInterval;
     private Checker progressChecker;
 
-    public DataManager(BiomeMastery main) throws IOException, SQLException, CommunicationException {
-        this.main = main;
-        logger = main.getCustomLogger();
-        playerDataMap = new HashMap<>();
-        biomeDataMap = new HashMap<>();
-        enabledWorlds = new ArrayList<>();
-        enabledBiomes = new ArrayList<>();
-        defaultLevels = new HashMap<>();
-        defaultRewards = new HashMap<>();
+    public DataManager(FileConfiguration config,
+                       MessageManager messageManager,
+                       VaultHook vaultHook,
+                       Logger logger) {
+        this.messageManager = messageManager;
+        this.logger = logger;
+        this.vaultHook = vaultHook;
+        this.config = config;
+    }
 
-        if (main.getConfig().getBoolean("database.enabled")) {
+    public void initialise(BiomeMastery main) throws IOException, SQLException, CommunicationException {
+        if (config.getBoolean("database.enabled")) {
             dataSaveType = "database";
-            database = new HikariCPConnection(main);
+            database = new HikariCPConnection(main.getConfig());
             database.connect();
         } else {
             database = null;
             dataSaveType = "files";
 
-            try {
-                Files.createDirectories(Paths.get(main.getDataFolder() + File.separator + "playerData"));
-            } catch (IOException e) {
-                throw new IOException(e);
-            }
+            Files.createDirectories(Paths.get(main.getDataFolder() + File.separator + "playerData"));
 
             Utils.consoleMsg(ChatColor.DARK_GREEN + "File Storage enabled.");
         }
-
-        setDefaultSettings(Bukkit.getConsoleSender());
-        createBiomeData(Bukkit.getConsoleSender());
-        startChecker();
     }
 
-    public void reload(CommandSender sender) {
+    public void loadData(BiomeMastery main, CommandSender sender) {
         setDefaultSettings(sender);
         createBiomeData(sender);
-        startChecker();
+        startChecker(main);
     }
 
     private void setDefaultSettings(CommandSender sender) {
-        FileConfiguration config = main.getConfig();
-
         updateInterval = config.getInt("default_settings.update_interval");
 
         //Create list of enabled worlds
@@ -89,11 +89,13 @@ public class DataManager {
         //Create default levels + rewards
         defaultLevels.clear();
         defaultRewards.clear();
-        for (String key : config.getConfigurationSection("default_settings.levels").getKeys(false)) {
-            defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + "target_duration"));
 
-            //TODO: See BiomeData todo
-            defaultRewards.put(Integer.parseInt(key), new Rewards(main, sender, "default_settings.levels." + key + "."));
+        ConfigurationSection levelsSection = config.getConfigurationSection("default_settings.levels");
+        if (levelsSection != null) {
+            for (String key : config.getConfigurationSection("default_settings.levels").getKeys(false)) {
+                defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + "target_duration"));
+                defaultRewards.put(Integer.parseInt(key), createReward(sender, "default_settings.levels." + key + "."));
+            }
         }
 
         //Make list of enabled biomes + create the biome data
@@ -110,7 +112,6 @@ public class DataManager {
 
         for (Biome biome : Biome.values()) {
             if (listedBiomes.contains(biome.name())) continue;
-//            if (listedBiomes.contains(biome.name().toLowerCase())) continue;
             blacklist.add(biome);
         }
 
@@ -124,7 +125,7 @@ public class DataManager {
             Biome biome;
 
             try {
-                biome = Biome.valueOf(rawBiome);
+                biome = Biome.valueOf(rawBiome.toUpperCase());
             } catch (IllegalArgumentException e) {
                 logger.logToPlayer(sender, e, "&c'" + rawBiome + "' is not a valid biome");
                 continue;
@@ -139,14 +140,181 @@ public class DataManager {
     private void createBiomeData(CommandSender sender) {
         //Loops through the list of enabled biomes. Find it in the biomes config section, if it doesnt exist then set default settings
         for (Biome enabledBiome : enabledBiomes) {
-            boolean isDefault = main.getConfig().getConfigurationSection("biomes." + enabledBiome.name()) == null;
+            boolean isDefault = config.getConfigurationSection("biomes." + enabledBiome.name()) == null;
 
-            BiomeData biomeData = new BiomeData(main, enabledBiome, isDefault, sender);
+            BiomeData biomeData = new BiomeData(this, config, enabledBiome, isDefault, sender);
             biomeDataMap.put(enabledBiome, biomeData);
         }
     }
 
-    public void startChecker() {
+    public Reward createReward(CommandSender sender, String path) {
+        RewardType rewardType;
+        try {
+            rewardType = RewardType.valueOf(config.getString(path + "reward_type").toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            rewardType = RewardType.NONE;
+        }
+
+        switch (rewardType) {
+            case POTION:
+                return potionReward(sender, path);
+
+            case EFFECT:
+                return effectReward(sender, path);
+
+            case CURRENCY:
+                return currencyReward(sender, path);
+
+            case EXPERIENCE:
+                return experienceReward(sender, path);
+
+            case ITEM:
+                return itemReward(sender, path);
+
+            case PERMISSION:
+                return permissionReward(sender, path);
+
+            case COMMAND:
+                return commandReward(sender, path);
+        }
+
+        logger.logToPlayer(sender, null, "&c" + rewardType + " is not a valid reward type");
+        return new NullReward();
+    }
+
+    private Reward potionReward(CommandSender sender, String path) {
+        String[] potionParts = config.getString(path + "reward_item").split(":");
+        PotionType potionType;
+        int amplifier;
+
+        try {
+            potionType = PotionType.valueOf(potionParts[0].toUpperCase());
+            amplifier = Integer.parseInt(potionParts[1]);
+        } catch (IllegalArgumentException ex) {
+            return new NullReward();
+        }
+
+        return new PotionReward(potionType, amplifier);
+    }
+
+    private Reward effectReward(CommandSender sender, String path) {
+        EffectType effectType;
+
+        try {
+            effectType = EffectType.valueOf(config.getString(path + "reward_item"));
+        } catch (IllegalArgumentException ex) {
+            return new NullReward();
+        }
+
+        return new EffectReward(effectType);
+    }
+
+    private Reward currencyReward(CommandSender sender, String path) {
+        if (vaultHook == null) {
+//            logger.logToPlayer(sender, null, ChatColor.RED + "Cannot give currency rewards as Vault could not be hooked into");
+            return new NullReward();
+        }
+
+        String rawDouble = config.getString(path + "reward_item");
+        double money;
+
+        try {
+            money = Double.parseDouble(rawDouble);
+        } catch (IllegalArgumentException ex) {
+//            logger.logToPlayer(sender, ex, "&c" + rawDouble + " is not a valid number");
+            return new NullReward();
+        }
+
+        return new CurrencyReward(vaultHook, money);
+    }
+
+    private Reward experienceReward(CommandSender sender, String path) {
+        String rawInt = config.getString(path + "reward_item");
+        int experience;
+
+        try {
+            experience = Integer.parseInt(rawInt);
+        } catch (IllegalArgumentException ex) {
+            logger.logToPlayer(sender, ex, "&c" + rawInt + " is not a valid number");
+            return new NullReward();
+        }
+        return new ExperienceReward(experience);
+    }
+
+    private Reward itemReward(CommandSender sender, String path) {
+        ArrayList<ItemStack> itemList = new ArrayList<>();
+        String[] itemParts;
+        Material material;
+        int amount;
+
+        if (config.isString(path + "reward_item")) {
+            itemParts = config.getString(path + "reward_item").split(":");
+            try {
+                material = Material.valueOf(itemParts[0].toUpperCase());
+                amount = Integer.parseInt(itemParts[1].replace(":", ""));
+                itemList.add(new ItemStack(material, amount));
+            } catch (NullPointerException ex) {
+                logger.logToPlayer(sender, ex, "&c" + itemParts[0] + " is not a valid material");
+            } catch (NumberFormatException ex) {
+                logger.logToPlayer(sender, ex, "&c" + itemParts[1] + " is not a valid number");
+            }
+        }
+
+        if (config.isList(path + "reward_item")) {
+            for (String rawItemString : config.getStringList(path + "reward_item")) {
+                itemParts = rawItemString.split(":");
+                try {
+                    material = Material.valueOf(itemParts[0].toUpperCase());
+                    amount = Integer.parseInt(itemParts[1].replace(":", ""));
+                    itemList.add(new ItemStack(material, amount));
+                } catch (NullPointerException ex) {
+                    logger.logToPlayer(sender, ex, "&c" + itemParts[0] + " is not a valid material");
+                } catch (NumberFormatException ex) {
+                    logger.logToPlayer(sender, ex, "&c" + itemParts[1] + " is not a valid number");
+                }
+
+            }
+        }
+
+        if (itemList.isEmpty()) return new NullReward();
+
+        return new ItemReward(messageManager, itemList);
+    }
+
+    private Reward permissionReward(CommandSender sender, String path) {
+        ArrayList<String> permissionList = new ArrayList<>();
+
+        if (config.isString(path + "reward_item"))
+            permissionList.add(config.getString(path + "reward_item"));
+
+
+        if (config.isList(path + "reward_item"))
+            permissionList.addAll(config.getStringList(path + "reward_item"));
+
+
+        if (permissionList.isEmpty()) return new NullReward();
+
+        return new PermissionReward(vaultHook, permissionList);
+    }
+
+    private Reward commandReward(CommandSender sender, String path) {
+        ArrayList<String> commandList = new ArrayList<>();
+
+        if (config.isString(path + "reward_item"))
+            commandList.add(config.getString(path + "reward_item"));
+
+
+        if (config.isList(path + "reward_item"))
+            commandList.addAll(config.getStringList(path + "reward_item"));
+
+
+        if (commandList.isEmpty()) return new NullReward();
+
+        return new CommandReward(commandList);
+
+    }
+
+    public void startChecker(BiomeMastery main) {
         if (progressChecker != null)
             if (!progressChecker.isCancelled()) progressChecker.cancel();
 

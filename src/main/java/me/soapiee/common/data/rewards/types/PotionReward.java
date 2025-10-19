@@ -1,18 +1,17 @@
 package me.soapiee.common.data.rewards.types;
 
-import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.RewardType;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.potion.PotionType;
 
 public class PotionReward extends Reward {
 
     private final PotionEffect potion;
 
-    public PotionReward(BiomeMastery main, PotionEffectType potionType, int amplifier) {
-        super(main, RewardType.POTION);
-        this.potion = new PotionEffect(potionType, Integer.MAX_VALUE, amplifier);
+    public PotionReward(PotionType potionType, int amplifier) {
+        super(RewardType.POTION);
+        this.potion = new PotionEffect(potionType.getEffectType(), Integer.MAX_VALUE, amplifier);
     }
 
     @Override
@@ -24,6 +23,6 @@ public class PotionReward extends Reward {
 
     @Override
     public String toString() {
-        return "";
+        return potion.getType() + " " + potion.getAmplifier();
     }
 }

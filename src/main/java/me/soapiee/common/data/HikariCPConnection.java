@@ -2,7 +2,6 @@ package me.soapiee.common.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.soapiee.common.BiomeMastery;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -24,8 +23,7 @@ public class HikariCPConnection {
 
     private HikariDataSource connection;
 
-    public HikariCPConnection(BiomeMastery main) {
-        FileConfiguration config = main.getConfig();
+    public HikariCPConnection(FileConfiguration config) {
         HOST = config.getString("database.host");
         PORT = config.getInt("database.port");
         DATABASE = config.getString("database.database");

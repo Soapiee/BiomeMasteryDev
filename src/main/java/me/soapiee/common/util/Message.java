@@ -9,8 +9,9 @@ public enum Message {
     DATAERROR("data_error", "&c%player_name%'s data could not be loaded or changed at this time"),
     DATAERRORPLAYER("data_error_player", "&cThere was an error loading/saving your data. Please re-log. "
             + "\nIf this error persists, contact support immediately"),
+    INVFULL("player_inventory_full", "&cYour reward dropped on the floor because your inventory is full"),
     ADMINRELOADCMDUSAGE("admin_reload_command_usage", "&cUsage: /tf reload"),
-    RELOADSUCCESS("reload_success", "&aSuccessfully reloaded TFQuiz"),
+    RELOADSUCCESS("reload_success", "&aSuccessfully reloaded Biome Mastery"),
     RELOADERROR("reload_error", "&cError reloading the messages.yml"),
     RELOADINPROGRESS("reload_inprogress", "&eReloading configuration...");
 

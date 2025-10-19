@@ -1,6 +1,5 @@
 package me.soapiee.common.data.rewards.types;
 
-import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.RewardType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -11,8 +10,8 @@ public class CommandReward extends Reward {
 
     private final ArrayList<String> commandList;
 
-    public CommandReward(BiomeMastery main, ArrayList<String> commandList) {
-        super(main, RewardType.COMMAND);
+    public CommandReward(ArrayList<String> commandList) {
+        super(RewardType.COMMAND);
         this.commandList = commandList;
     }
 

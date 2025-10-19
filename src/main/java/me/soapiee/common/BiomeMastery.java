@@ -26,13 +26,14 @@ public final class BiomeMastery extends JavaPlugin {
     private Logger logger;
 
 
-    //TODO:
-    // A list of recorded biomes is created on server load (if blacklist, all biomes are added, then the blacklisted ones are removed)
+    //
+    // A list of enabled biomes is created on server load
+    //    (if blacklist, all biomes are added, then the blacklisted ones are removed)
     //    (if whitelist is used, only those in the whitelist are added)
-    //    error check: make sure all specified biomes fit in the list created. If not, throw error
-    // -
+    //
+    //TODO:
     // On player join,
-    //     Biome is establised. Biome is checked against recorded biomes list.
+    //     Biome is established. Wolrd + Biome are checked against enabled worlds + biomes list.
     //     If its a valid biome then entry time is recorded.
     // Every X time,
     //    Player is checked if they're within a valid biome.
@@ -61,9 +62,10 @@ public final class BiomeMastery extends JavaPlugin {
         playerCache = new PlayerCache(Bukkit.getServer().getOfflinePlayers());
         messageManager = new MessageManager(this);
         logger = new Logger(this);
+        dataManager = new DataManager(getConfig(), messageManager, vaultHook, logger);
 
         try {
-            dataManager = new DataManager(this);
+            dataManager.initialise(this);
         } catch (SQLException | CommunicationException e) {
             logger.logToFile(e, ChatColor.RED + "Database could not connect. Disabling plugin..");
             Bukkit.getPluginManager().disablePlugin(this);
@@ -74,8 +76,11 @@ public final class BiomeMastery extends JavaPlugin {
             return;
         }
 
+        dataManager.loadData(this, Bukkit.getConsoleSender());
+
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) new PlaceHolderAPIHook(this).register();
         if (getServer().getPluginManager().getPlugin("Vault") != null) vaultHook = new VaultHook();
+        else vaultHook = null;
 
         getCommand("admin").setExecutor(new AdminCmd(this));
         getCommand("placeholder").setExecutor(new UsageCmd(this));

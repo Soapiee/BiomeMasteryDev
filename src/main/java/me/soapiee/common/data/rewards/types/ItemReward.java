@@ -1,7 +1,8 @@
 package me.soapiee.common.data.rewards.types;
 
-import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -10,11 +11,17 @@ import java.util.ArrayList;
 
 public class ItemReward extends Reward {
 
+    private final MessageManager messageManager;
     private final ArrayList<ItemStack> itemList;
 
-    public ItemReward(BiomeMastery main, ArrayList<ItemStack> itemList) {
-        super(main, RewardType.ITEM);
+    public ItemReward(MessageManager messageManager, ArrayList<ItemStack> itemList) {
+        super(RewardType.ITEM);
+        this.messageManager = messageManager;
         this.itemList = itemList;
+    }
+
+    public ItemStack getReward(int index) {
+        return itemList.get(index);
     }
 
     @Override
@@ -24,7 +31,7 @@ public class ItemReward extends Reward {
                 player.getInventory().addItem(item);
             } else {
                 player.getLocation().getWorld().dropItem(player.getLocation(), item);
-//                        player.sendMessage(Utils.colour(messageManager.get(Message.GAMEITEMWINERROR)));
+                player.sendMessage(Utils.colour(messageManager.get(Message.INVFULL)));
                 return;
             }
         }

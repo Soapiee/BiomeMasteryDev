@@ -34,7 +34,7 @@ public class UpdateChecker {
 
         if (currentVersion < latestVersion) updateCheckResult = UpdateCheckResult.OUT_DATED;
         else if (currentVersion == latestVersion) updateCheckResult = UpdateCheckResult.UP_TO_DATE;
-        else updateCheckResult = UpdateCheckResult.UNRELEASED;
+        else updateCheckResult = UpdateCheckResult.NO_RESULT;
     }
 
     public UpdateCheckResult getUpdateCheckResult() {
@@ -65,7 +65,7 @@ public class UpdateChecker {
     }
 
     public enum UpdateCheckResult {
-        NO_RESULT, OUT_DATED, UP_TO_DATE, UNRELEASED,
+        NO_RESULT, OUT_DATED, UP_TO_DATE;
     }
 
 }
