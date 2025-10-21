@@ -1,5 +1,7 @@
 package me.soapiee.common.logic;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import org.bukkit.Bukkit;
@@ -13,8 +15,10 @@ public class BiomeLevel {
     private final OfflinePlayer player;
 
     private final BiomeData biomeData;
-    private int level;
-    private int progress;
+    @Getter private int level;
+    @Getter private int progress;
+    @Getter
+    @Setter
     private LocalDateTime entryTime;
 
     public BiomeLevel(OfflinePlayer player, BiomeData biomeData, int level, int progress) throws NullPointerException {
@@ -28,22 +32,6 @@ public class BiomeLevel {
 
     public BiomeLevel(OfflinePlayer player, BiomeData biomeData) {
         this(player, biomeData, 0, 0);
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public LocalDateTime getEntryTime() {
-        return entryTime;
-    }
-
-    public int getProgress() {
-        return progress;
-    }
-
-    public void setEntryTime(LocalDateTime newEntryTime) {
-        entryTime = newEntryTime;
     }
 
     public void clearEntryTime() {

@@ -1,5 +1,6 @@
 package me.soapiee.common.util;
 
+import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,7 +13,7 @@ import java.net.URLConnection;
 public class UpdateChecker {
 
     private URL resourceURL;
-    private UpdateCheckResult updateCheckResult;
+    @Getter private UpdateCheckResult updateCheckResult;
 
     public UpdateChecker(BiomeMastery main, int resourceId) {
         try {
@@ -35,10 +36,6 @@ public class UpdateChecker {
         if (currentVersion < latestVersion) updateCheckResult = UpdateCheckResult.OUT_DATED;
         else if (currentVersion == latestVersion) updateCheckResult = UpdateCheckResult.UP_TO_DATE;
         else updateCheckResult = UpdateCheckResult.NO_RESULT;
-    }
-
-    public UpdateCheckResult getUpdateCheckResult() {
-        return updateCheckResult;
     }
 
     public void updateAlert(BiomeMastery main) {

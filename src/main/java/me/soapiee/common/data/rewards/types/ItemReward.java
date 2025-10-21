@@ -42,6 +42,7 @@ public class ItemReward extends Reward {
         StringBuilder builder = new StringBuilder();
         int i = 1;
 
+        builder.append(getType().toString().toLowerCase()).append("s: ");
         for (ItemStack item : itemList) {
             builder.append(item.getAmount()).append(" ").append(item.getType().toString().toLowerCase().replace("_", " "));
             if (itemList.size() > i) builder.append(", ");

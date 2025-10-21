@@ -1,15 +1,17 @@
 package me.soapiee.common.logic.events;
 
+import lombok.Getter;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 public final class LevelUpEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private final OfflinePlayer player;
-    private final int newLevel;
+    @Getter private final int newLevel;
     private boolean cancelled;
 
     public LevelUpEvent(OfflinePlayer player, int newLevel) {
@@ -22,10 +24,6 @@ public final class LevelUpEvent extends Event implements Cancellable {
         return this.player;
     }
 
-    public int getNewLevel() {
-        return this.newLevel;
-    }
-
     @Override
     public boolean isCancelled() {
         return this.cancelled;
@@ -36,7 +34,7 @@ public final class LevelUpEvent extends Event implements Cancellable {
         this.cancelled = true;
     }
 
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlers;
     }
 

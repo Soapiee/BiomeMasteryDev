@@ -1,5 +1,6 @@
 package me.soapiee.common.data;
 
+import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.EffectType;
 import me.soapiee.common.data.rewards.RewardType;
@@ -39,16 +40,16 @@ public class DataManager {
     private final FileConfiguration config;
     private boolean debugMode;
 
-    private String dataSaveType;
-    private HikariCPConnection database;
+    @Getter private String dataSaveType;
+    @Getter private HikariCPConnection database;
 
     private final HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
     private final HashMap<Biome, BiomeData> biomeDataMap = new HashMap<>();
     private final List<World> enabledWorlds = new ArrayList<>();
     private final List<Biome> enabledBiomes = new ArrayList<>();
-    private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
-    private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
-    private int updateInterval;
+    @Getter private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
+    @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
+    @Getter private int updateInterval;
     private Checker progressChecker;
 
     public DataManager(FileConfiguration config,
@@ -79,12 +80,10 @@ public class DataManager {
     }
 
     public void loadData(BiomeMastery main, CommandSender sender) {
-        this.debugMode = main.getDebugMode();
+        this.debugMode = main.isDebugMode();
         setDefaultSettings(sender);
         createBiomeData(sender);
         startChecker(main);
-//        main.getPlayerListener().setEnabledWorlds(enabledWorlds);
-//        main.getPlayerListener().setEnabledBiomes(enabledBiomes);
     }
 
     private void setDefaultSettings(CommandSender sender) {
@@ -385,22 +384,6 @@ public class DataManager {
         return playerDataMap.get(uuid);
     }
 
-    public String getDataSaveType() {
-        return dataSaveType;
-    }
-
-    public HikariCPConnection getDatabase() {
-        return database;
-    }
-
-    public int getUpdateInterval() {
-        return updateInterval;
-    }
-
-    public List<World> getEnabledWorlds() {
-        return enabledWorlds;
-    }
-
     public boolean playerInEnabledWorld(World world) {
         for (World enabledWorlds : enabledWorlds) {
             if (enabledWorlds == world) return true;
@@ -419,14 +402,6 @@ public class DataManager {
 
     public BiomeData getBiomeData(Biome biome) {
         return biomeDataMap.get(biome);
-    }
-
-    public HashMap<Integer, Integer> getDefaultLevels() {
-        return defaultLevels;
-    }
-
-    public HashMap<Integer, Reward> getDefaultRewards() {
-        return defaultRewards;
     }
 
     public void saveAll(boolean async) {

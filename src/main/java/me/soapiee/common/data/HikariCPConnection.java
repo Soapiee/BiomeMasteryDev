@@ -2,6 +2,7 @@ package me.soapiee.common.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -21,7 +22,7 @@ public class HikariCPConnection {
     private final int PORT;
     private final HashSet<String> biomes;
 
-    private HikariDataSource connection;
+    @Getter private HikariDataSource connection;
 
     public HikariCPConnection(FileConfiguration config) {
         HOST = config.getString("database.host");
@@ -73,10 +74,6 @@ public class HikariCPConnection {
 
     public boolean isConnected() {
         return connection != null;
-    }
-
-    public HikariDataSource getConnection() {
-        return connection;
     }
 
     public void disconnect() {

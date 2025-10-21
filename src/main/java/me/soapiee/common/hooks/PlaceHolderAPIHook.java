@@ -1,19 +1,19 @@
 package me.soapiee.common.hooks;
 
+import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.data.DataManager;
+import me.soapiee.common.manager.MessageManager;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@RequiredArgsConstructor
 public class PlaceHolderAPIHook extends PlaceholderExpansion {
 
-    private final BiomeMastery main;
-
-    public PlaceHolderAPIHook(BiomeMastery main) {
-        this.main = main;
-    }
+    private final MessageManager messageManager;
+    private final DataManager dataManager;
 
     @Override
     public @NotNull String getIdentifier() {
@@ -39,7 +39,7 @@ public class PlaceHolderAPIHook extends PlaceholderExpansion {
                 return "example1";
             }
             if (identifier.equalsIgnoreCase("example2")) {
-                return main.getMessageManager() == null ? "false" : "true";
+                return messageManager == null ? "false" : "true";
             }
         }
         return null;

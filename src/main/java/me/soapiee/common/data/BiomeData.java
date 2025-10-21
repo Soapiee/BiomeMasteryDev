@@ -1,5 +1,6 @@
 package me.soapiee.common.data;
 
+import lombok.Getter;
 import me.soapiee.common.data.rewards.types.Reward;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 
 public class BiomeData {
 
-    private final Biome biome;
+    @Getter private final Biome biome;
     private final HashMap<Integer, Integer> levels;
     private final HashMap<Integer, Reward> rewards;
 
@@ -43,9 +44,5 @@ public class BiomeData {
 
     public Reward getReward(int level) {
         return rewards.get(level);
-    }
-
-    public Biome getBiome() {
-        return biome;
     }
 }

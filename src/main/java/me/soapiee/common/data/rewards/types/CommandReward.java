@@ -27,7 +27,7 @@ public class CommandReward extends Reward {
         StringBuilder builder = new StringBuilder();
         int i = 1;
 
-        builder.append(type.toString().toLowerCase()).append("s: ");
+        builder.append(getType().toString().toLowerCase()).append("s: ");
         for (String permission : commandList) {
             builder.append(permission);
             if (commandList.size() > i) builder.append(", ");

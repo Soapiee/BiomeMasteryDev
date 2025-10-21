@@ -8,16 +8,12 @@ import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-
 public class Checker extends BukkitRunnable {
 
     private final DataManager dataManager;
-    private final List<World> enabledWorlds;
 
     public Checker(BiomeMastery main, long delay) {
         dataManager = main.getDataManager();
-        enabledWorlds = dataManager.getEnabledWorlds();
         runTaskTimer(main, 0, delay * 20);
     }
 
