@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
-public class ItemReward extends Reward {
+public class ItemReward extends AbstractReward {
 
     private final MessageManager messageManager;
     private final ArrayList<ItemStack> itemList;
@@ -51,4 +51,5 @@ public class ItemReward extends Reward {
 
         return builder.toString();
     }
+
 }

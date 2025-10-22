@@ -4,7 +4,7 @@ import me.soapiee.common.data.rewards.RewardType;
 import me.soapiee.common.hooks.VaultHook;
 import org.bukkit.entity.Player;
 
-public class CurrencyReward extends Reward {
+public class CurrencyReward extends AbstractReward {
 
     private final VaultHook vaultHook;
     private final double amount;
@@ -24,4 +24,5 @@ public class CurrencyReward extends Reward {
     public String toString() {
         return amount + vaultHook.getCurrencyName();
     }
+
 }

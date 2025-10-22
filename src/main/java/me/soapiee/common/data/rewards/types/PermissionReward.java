@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-public class PermissionReward extends Reward {
+public class PermissionReward extends AbstractReward {
 
     private final VaultHook vaultHook;
     private final ArrayList<String> permissions;
@@ -38,4 +38,5 @@ public class PermissionReward extends Reward {
 
         return builder.toString();
     }
+
 }

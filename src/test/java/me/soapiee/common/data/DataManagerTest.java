@@ -1,7 +1,15 @@
 package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.rewards.types.*;
+import me.soapiee.common.data.rewards.types.CommandReward;
+import me.soapiee.common.data.rewards.types.CurrencyReward;
+import me.soapiee.common.data.rewards.types.EffectReward;
+import me.soapiee.common.data.rewards.types.ExperienceReward;
+import me.soapiee.common.data.rewards.types.ItemReward;
+import me.soapiee.common.data.rewards.types.NullReward;
+import me.soapiee.common.data.rewards.types.PermissionReward;
+import me.soapiee.common.data.rewards.types.PotionReward;
+import me.soapiee.common.data.rewards.types.Reward;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
@@ -22,7 +30,9 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +85,7 @@ public class DataManagerTest {
 
         List<Biome> actualValue = dataManager.createBiomeWhitelist(Bukkit.getConsoleSender(), inputList);
 
-        Assertions.assertTrue(actualValue.contains(Biome.PLAINS));
+        assertTrue(actualValue.contains(Biome.PLAINS));
     }
 
     @Test
@@ -105,7 +115,7 @@ public class DataManagerTest {
 
         List<Biome> actualValue = dataManager.createBiomeBlacklist(inputList);
 
-        Assertions.assertTrue(actualValue.contains(Biome.NETHER_WASTES));
+        assertTrue(actualValue.contains(Biome.NETHER_WASTES));
     }
 
     @Test
@@ -116,7 +126,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(PotionReward.class, actualValue);
+        assertInstanceOf(PotionReward.class, actualValue);
     }
 
     @Test
@@ -127,7 +137,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(EffectReward.class, actualValue);
+        assertInstanceOf(EffectReward.class, actualValue);
     }
 
     @Test
@@ -138,7 +148,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(CurrencyReward.class, actualValue);
+        assertInstanceOf(CurrencyReward.class, actualValue);
     }
 
     @Test
@@ -149,7 +159,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(ExperienceReward.class, actualValue);
+        assertInstanceOf(ExperienceReward.class, actualValue);
     }
 
     @Test
@@ -169,8 +179,8 @@ public class DataManagerTest {
         } catch (NullPointerException | NumberFormatException ignored) {
         }
 
-        Assertions.assertTrue(itemList.get(0).getType() == Material.APPLE);
-        Assertions.assertTrue(itemList.get(0).getAmount() == 10);
+        assertTrue(itemList.get(0).getType() == Material.APPLE);
+        assertTrue(itemList.get(0).getAmount() == 10);
     }
 
     @Test
@@ -184,9 +194,9 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(ItemReward.class, actualValue);
-        Assertions.assertTrue(((ItemReward) actualValue).getReward(0).getType() == Material.APPLE);
-        Assertions.assertTrue(((ItemReward) actualValue).getReward(0).getAmount() == 10);
+        assertInstanceOf(ItemReward.class, actualValue);
+        assertTrue(((ItemReward) actualValue).getReward(0).getType() == Material.APPLE);
+        assertTrue(((ItemReward) actualValue).getReward(0).getAmount() == 10);
     }
 
     @Test
@@ -203,7 +213,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(PermissionReward.class, actualValue);
+        assertInstanceOf(PermissionReward.class, actualValue);
     }
 
     @Test
@@ -216,7 +226,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(CommandReward.class, actualValue);
+        assertInstanceOf(CommandReward.class, actualValue);
     }
 
     @Test
@@ -227,6 +237,7 @@ public class DataManagerTest {
 
         Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
 
-        Assertions.assertInstanceOf(NullReward.class, actualValue);
+        assertInstanceOf(NullReward.class, actualValue);
     }
+
 }
