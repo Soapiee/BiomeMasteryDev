@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
-public class ItemReward extends Reward {
+public class ItemReward extends AbstractReward {
 
     private final MessageManager messageManager;
     private final ArrayList<ItemStack> itemList;
@@ -42,7 +42,7 @@ public class ItemReward extends Reward {
         StringBuilder builder = new StringBuilder();
         int i = 1;
 
-        builder.append(getType().toString().toLowerCase()).append("s: ");
+        builder.append(type.toString().toLowerCase()).append("s: ");
         for (ItemStack item : itemList) {
             builder.append(item.getAmount()).append(" ").append(item.getType().toString().toLowerCase().replace("_", " "));
             if (itemList.size() > i) builder.append(", ");
@@ -51,4 +51,5 @@ public class ItemReward extends Reward {
 
         return builder.toString();
     }
+
 }

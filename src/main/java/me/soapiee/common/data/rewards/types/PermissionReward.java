@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-public class PermissionReward extends Reward {
+public class PermissionReward extends AbstractReward {
 
     private final VaultHook vaultHook;
     private final ArrayList<String> permissions;
@@ -29,7 +29,7 @@ public class PermissionReward extends Reward {
         StringBuilder builder = new StringBuilder();
         int i = 1;
 
-        builder.append(getType().toString().toLowerCase()).append("s: ");
+        builder.append(type.toString().toLowerCase()).append("s: ");
         for (String permission : permissions) {
             builder.append(permission);
             if (permissions.size() > i) builder.append(", ");
@@ -38,4 +38,5 @@ public class PermissionReward extends Reward {
 
         return builder.toString();
     }
+
 }
