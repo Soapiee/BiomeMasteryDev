@@ -10,8 +10,7 @@ import java.util.HashMap;
 
 public class BiomeData {
 
-    @Getter
-    private final Biome biome;
+    @Getter private final Biome biome;
     private final HashMap<Integer, Integer> levels;
     private final HashMap<Integer, Reward> rewards;
 
@@ -46,5 +45,4 @@ public class BiomeData {
     public Reward getReward(int level) {
         return rewards.get(level);
     }
-
 }

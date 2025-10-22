@@ -4,15 +4,7 @@ import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.rewards.EffectType;
 import me.soapiee.common.data.rewards.RewardType;
-import me.soapiee.common.data.rewards.types.CommandReward;
-import me.soapiee.common.data.rewards.types.CurrencyReward;
-import me.soapiee.common.data.rewards.types.EffectReward;
-import me.soapiee.common.data.rewards.types.ExperienceReward;
-import me.soapiee.common.data.rewards.types.ItemReward;
-import me.soapiee.common.data.rewards.types.NullReward;
-import me.soapiee.common.data.rewards.types.PermissionReward;
-import me.soapiee.common.data.rewards.types.PotionReward;
-import me.soapiee.common.data.rewards.types.Reward;
+import me.soapiee.common.data.rewards.types.*;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.Checker;
 import me.soapiee.common.manager.MessageManager;
@@ -48,21 +40,16 @@ public class DataManager {
     private final FileConfiguration config;
     private boolean debugMode;
 
-    @Getter
-    private String dataSaveType;
-    @Getter
-    private HikariCPConnection database;
+    @Getter private String dataSaveType;
+    @Getter private HikariCPConnection database;
 
     private final HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
     private final HashMap<Biome, BiomeData> biomeDataMap = new HashMap<>();
     private final List<World> enabledWorlds = new ArrayList<>();
     private final List<Biome> enabledBiomes = new ArrayList<>();
-    @Getter
-    private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
-    @Getter
-    private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
-    @Getter
-    private int updateInterval;
+    @Getter private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
+    @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
+    @Getter private int updateInterval;
     private Checker progressChecker;
 
     public DataManager(FileConfiguration config,

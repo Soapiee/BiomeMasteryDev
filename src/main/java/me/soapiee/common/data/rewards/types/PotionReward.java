@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
-public class PotionReward extends AbstractReward {
+public class PotionReward extends Reward {
 
     private final PotionEffect potion;
 
@@ -25,5 +25,4 @@ public class PotionReward extends AbstractReward {
     public String toString() {
         return potion.getType() + " " + potion.getAmplifier();
     }
-
 }
