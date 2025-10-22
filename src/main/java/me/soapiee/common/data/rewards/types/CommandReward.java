@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-public class CommandReward extends Reward {
+public class CommandReward extends AbstractReward {
 
     private final ArrayList<String> commandList;
 
@@ -36,4 +36,5 @@ public class CommandReward extends Reward {
 
         return builder.toString();
     }
+
 }

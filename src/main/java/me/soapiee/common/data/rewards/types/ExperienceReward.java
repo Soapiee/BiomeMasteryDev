@@ -3,7 +3,7 @@ package me.soapiee.common.data.rewards.types;
 import me.soapiee.common.data.rewards.RewardType;
 import org.bukkit.entity.Player;
 
-public class ExperienceReward extends Reward {
+public class ExperienceReward extends AbstractReward {
 
     private final int amount;
 
@@ -21,4 +21,5 @@ public class ExperienceReward extends Reward {
     public String toString() {
         return amount + " exp";
     }
+
 }
