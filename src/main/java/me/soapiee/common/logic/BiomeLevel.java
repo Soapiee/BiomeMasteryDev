@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.logic.events.LevelUpEvent;
+import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +20,9 @@ public class BiomeLevel {
     private final BiomeData biomeData;
     @Getter private int level;
     @Getter private int progress;
-    @Getter @Setter private LocalDateTime entryTime;
+    @Getter
+    @Setter
+    private LocalDateTime entryTime;
 
     public BiomeLevel(@NotNull OfflinePlayer player, BiomeData biomeData, int level, int progress) throws NullPointerException {
         this.player = player;
@@ -43,20 +47,27 @@ public class BiomeLevel {
         int toAdd = (int) ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
         entryTime = LocalDateTime.now();
 
+        Utils.consoleMsg(ChatColor.GREEN.toString() + toAdd + " seconds added to player progress for biome " + biomeData.getBiome().name());
+
         progress += toAdd;
         checkLevelUp();
     }
 
     private void checkLevelUp() {
+        int maxLevel = biomeData.getMaxLevel();
+        if (maxLevel == level) return;
+
         int targetTime = biomeData.getTargetDuration(level);
         if (progress < targetTime) return;
 
         while (progress >= targetTime) {
             level++;
             progress -= targetTime;
-//            Utils.consoleMsg(Utils.colour("&eedited progress: " + progress));
+
             LevelUpEvent event = new LevelUpEvent(player, level);
             Bukkit.getPluginManager().callEvent(event);
+
+            if (maxLevel == level) return;
         }
     }
 

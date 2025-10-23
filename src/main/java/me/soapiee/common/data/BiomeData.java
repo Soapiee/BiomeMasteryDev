@@ -39,10 +39,20 @@ public class BiomeData {
     }
 
     public int getTargetDuration(int level) {
-        return levels.get(level);
+        return levels.getOrDefault(level + 1, null);
     }
 
     public Reward getReward(int level) {
         return rewards.get(level);
+    }
+
+    public int getMaxLevel() {
+        int max = 0;
+
+        for (Integer level : levels.values()) {
+            if (level >= max) max = level;
+        }
+
+        return max;
     }
 }

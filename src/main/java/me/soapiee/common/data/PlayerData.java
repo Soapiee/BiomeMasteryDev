@@ -52,7 +52,7 @@ public class PlayerData {
 
         switch (dataManager.getDataSaveType()) {
             case "database":
-                for (Biome key : Biome.values()) {
+                for (Biome key : dataManager.getEnabledBiomes()) {
                     readDatabase(key.toString(), (player2, results, error) -> {
                         if (error != null) {
                             logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
@@ -80,23 +80,25 @@ public class PlayerData {
             }
             contents = YamlConfiguration.loadConfiguration(file);
         }
+        Utils.consoleMsg(ChatColor.AQUA + "pre-existing file");
 
-        for (Biome biome : Biome.values()) {
+        for (Biome biome : dataManager.getEnabledBiomes()) {
             int level = contents.getInt(biome + ".Level");
             int progress = contents.getInt(biome + ".Progress");
             BiomeLevel biomeLevel = new BiomeLevel(player, dataManager.getBiomeData(biome), level, progress);
 
             biomesMap.put(biome, biomeLevel);
+            Utils.consoleMsg(ChatColor.GREEN + "biomeLevel for " + biome.name() + " added (" + level + ":" + progress + ")");
         }
     }
 
     private void createFile() {
         final String playerName = player.getName();
-        final OfflinePlayer offlinePlayer = player;
         final HashSet<String> biomes = new HashSet<>();
-        for (Biome biome : Biome.values()) {
+        for (Biome biome : dataManager.getEnabledBiomes()) {
             biomes.add(biome.name());
         }
+        Utils.consoleMsg(ChatColor.AQUA + "new file created");
 
         new BukkitRunnable() {
             @Override
@@ -108,7 +110,6 @@ public class PlayerData {
                         for (String biome : biomes) {
                             localCopy.set(biome + ".Level", 0);
                             localCopy.set(biome + ".Progress", 0);
-//                            biomesMap.put(Biome.valueOf(biome), new BiomeLevel(main, offlinePlayer, dataManager.getBiomeData(Biome.valueOf(biome))));
                         }
 
                         localCopy.save(file);
@@ -118,11 +119,16 @@ public class PlayerData {
                 }
             }
         }.runTaskAsynchronously(main);
+
+        for (Biome biome : dataManager.getEnabledBiomes()) {
+            biomesMap.put(biome, new BiomeLevel(player, dataManager.getBiomeData(biome)));
+//            Utils.consoleMsg(ChatColor.GREEN + "biomeLevel for " + biome.name() + " added");
+        }
     }
 
     private void saveFile(boolean async) {
-        for (Biome biomeKey : Biome.values()) {
-            final String biome = biomeKey.toString();
+        for (Biome biomeKey : dataManager.getEnabledBiomes()) {
+            final String biome = biomeKey.name();
             final int level = getBiomeLevel(biomeKey).getLevel();
             final int progress = getBiomeLevel(biomeKey).getProgress();
             final String playerName = player.getName();
@@ -203,7 +209,7 @@ public class PlayerData {
     private void saveDatabase(boolean async) {
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
-                for (final Biome biome : Biome.values()) {
+                for (final Biome biome : dataManager.getEnabledBiomes()) {
                     try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                          PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
                         statement.setInt(1, getBiomeLevel(biome).getLevel());
@@ -218,7 +224,7 @@ public class PlayerData {
             });
 
         } else {
-            for (final Biome biome : Biome.values()) {
+            for (final Biome biome : dataManager.getEnabledBiomes()) {
                 try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                      PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
                     statement.setInt(1, getBiomeLevel(biome).getLevel());

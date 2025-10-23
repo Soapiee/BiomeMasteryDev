@@ -46,7 +46,7 @@ public class DataManager {
     private final HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
     private final HashMap<Biome, BiomeData> biomeDataMap = new HashMap<>();
     private final List<World> enabledWorlds = new ArrayList<>();
-    private final List<Biome> enabledBiomes = new ArrayList<>();
+    @Getter private final List<Biome> enabledBiomes = new ArrayList<>();
     @Getter private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
     @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
     @Getter private int updateInterval;
@@ -108,7 +108,8 @@ public class DataManager {
         ConfigurationSection levelsSection = config.getConfigurationSection("default_settings.levels");
         if (levelsSection != null) {
             for (String key : config.getConfigurationSection("default_settings.levels").getKeys(false)) {
-                defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + "target_duration"));
+                defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + ".target_duration"));
+//                Utils.consoleMsg(ChatColor.LIGHT_PURPLE + "Default level " + key + " duration: " + config.getInt("default_settings.levels." + key + ".target_duration"));
                 defaultRewards.put(Integer.parseInt(key), createReward(sender, "default_settings.levels." + key + "."));
             }
         }
@@ -401,7 +402,7 @@ public class DataManager {
     }
 
     public BiomeData getBiomeData(Biome biome) {
-        return biomeDataMap.get(biome);
+        return biomeDataMap.getOrDefault(biome, null);
     }
 
     public void saveAll(boolean async) {

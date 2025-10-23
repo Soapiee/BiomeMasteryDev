@@ -20,10 +20,12 @@ public class Checker extends BukkitRunnable {
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Biome playerBiome = player.getLocation().getBlock().getBiome();
+            BiomeLevel playerLevel = dataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
+            int maxLevel = dataManager.getBiomeData(playerBiome).getMaxLevel();
+
+            if (playerLevel.getLevel() == maxLevel) return;
             if (!dataManager.playerInEnabledBiome(playerBiome)) return;
             if (!dataManager.playerInEnabledWorld(player.getWorld())) return;
-
-            BiomeLevel playerLevel = dataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
 
             // TODO: Prevent this from being edited in two places at once
             playerLevel.addProgress();

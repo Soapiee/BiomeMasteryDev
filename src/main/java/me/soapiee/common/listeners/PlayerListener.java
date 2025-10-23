@@ -84,7 +84,7 @@ public class PlayerListener implements Listener {
             else if (previousBiome.name().equalsIgnoreCase(newBiome.name())) return;
         }
 
-        PlayerData playerData = dataManager.getPlayerData(event.getPlayer().getUniqueId());
+        PlayerData playerData = dataManager.getPlayerData(uuid);
         if (!dataManager.playerInEnabledWorld(previousWorld)) return;
         setBiomeProgress(playerData, previousBiome);
 
@@ -103,7 +103,7 @@ public class PlayerListener implements Listener {
     private void setBiomeStart(PlayerData playerData, Biome newBiome) {
         if (!dataManager.playerInEnabledBiome(newBiome)) return;
 
-//            Utils.consoleMsg(ChatColor.YELLOW + "new Biome: " + (newBiome != null ? newBiome.name() : "null"));
+        Utils.consoleMsg(ChatColor.DARK_PURPLE + "new Biome: " + (newBiome != null ? newBiome.name() : "null"));
         if (newBiome == null) return;
 
         BiomeLevel playerLevel = playerData.getBiomeLevel(newBiome);
@@ -126,7 +126,6 @@ public class PlayerListener implements Listener {
 
         dataManager.remove(uuid);
         playerBiomeMap.remove(uuid);
-//        Utils.consoleMsg(ChatColor.RED + "Removed player from playerBiome map");
     }
 
     @EventHandler

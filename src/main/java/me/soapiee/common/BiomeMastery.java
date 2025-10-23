@@ -10,6 +10,7 @@ import me.soapiee.common.listeners.PlayerListener;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.PlayerCache;
+import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -68,6 +69,19 @@ public final class BiomeMastery extends JavaPlugin {
         messageManager = new MessageManager(this);
         customLogger = new Logger(this);
         debugMode = getConfig().getBoolean("debug_mode", false);
+
+        // Hooks
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null)
+            new PlaceHolderAPIHook(messageManager, dataManager).register();
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            vaultHook = new VaultHook();
+            Utils.consoleMsg("Hooked into Vault");
+        } else {
+            vaultHook = null;
+            Utils.consoleMsg(ChatColor.RED + "Error hooking into Vault");
+        }
+
+        // Data setup
         dataManager = new DataManager(getConfig(), messageManager, vaultHook, customLogger, debugMode);
 
         try {
@@ -84,17 +98,15 @@ public final class BiomeMastery extends JavaPlugin {
 
         dataManager.loadData(this, Bukkit.getConsoleSender());
 
-        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null)
-            new PlaceHolderAPIHook(messageManager, dataManager).register();
-        if (getServer().getPluginManager().getPlugin("Vault") != null) vaultHook = new VaultHook();
-        else vaultHook = null;
-
+        // Commands setup
         getCommand("admin").setExecutor(new AdminCmd(this));
         getCommand("placeholder").setExecutor(new UsageCmd(this));
 
+        // Listeners setup
         playerListener = new PlayerListener(this);
         getServer().getPluginManager().registerEvents(playerListener, this);
 
+        // Updater notification setup
         // TODO: Enable later
 //        UpdateChecker updateChecker = new UpdateChecker(this, 125077);
 //        updateChecker.updateAlert(this);
