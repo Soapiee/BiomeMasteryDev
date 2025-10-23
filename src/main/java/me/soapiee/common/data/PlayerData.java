@@ -123,8 +123,8 @@ public class PlayerData {
     private void saveFile(boolean async) {
         for (Biome biomeKey : Biome.values()) {
             final String biome = biomeKey.toString();
-            final int level = getBiomeData(biomeKey).getLevel();
-            final int progress = getBiomeData(biomeKey).getProgress();
+            final int level = getBiomeLevel(biomeKey).getLevel();
+            final int progress = getBiomeLevel(biomeKey).getProgress();
             final String playerName = player.getName();
 
             if (async) {
@@ -206,8 +206,8 @@ public class PlayerData {
                 for (final Biome biome : Biome.values()) {
                     try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                          PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
-                        statement.setInt(1, getBiomeData(biome).getLevel());
-                        statement.setInt(2, getBiomeData(biome).getProgress());
+                        statement.setInt(1, getBiomeLevel(biome).getLevel());
+                        statement.setInt(2, getBiomeLevel(biome).getProgress());
                         statement.setString(3, uuid.toString());
                         statement.executeUpdate();
 
@@ -221,8 +221,8 @@ public class PlayerData {
             for (final Biome biome : Biome.values()) {
                 try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                      PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
-                    statement.setInt(1, getBiomeData(biome).getLevel());
-                    statement.setInt(2, getBiomeData(biome).getProgress());
+                    statement.setInt(1, getBiomeLevel(biome).getLevel());
+                    statement.setInt(2, getBiomeLevel(biome).getProgress());
                     statement.setString(3, uuid.toString());
                     statement.executeUpdate();
 
@@ -233,7 +233,7 @@ public class PlayerData {
         }
     }
 
-    public BiomeLevel getBiomeData(Biome biome) {
+    public BiomeLevel getBiomeLevel(Biome biome) {
         return biomesMap.get(biome);
     }
 

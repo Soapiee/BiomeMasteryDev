@@ -50,7 +50,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
                         PlayerData playerData = dataManager.getPlayerData(player.getUniqueId());
 
                         for (org.bukkit.block.Biome biome : org.bukkit.block.Biome.values()) {
-                            BiomeLevel biomeData = playerData.getBiomeData(biome);
+                            BiomeLevel biomeData = playerData.getBiomeLevel(biome);
                             sender.sendMessage(Utils.colour("&e" + biome.name() + "'s level: "
                                     + biomeData.getLevel()
                                     + " (" + biomeData.getProgress() + " seconds)"));

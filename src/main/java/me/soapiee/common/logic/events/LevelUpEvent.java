@@ -10,18 +10,14 @@ import org.jetbrains.annotations.NotNull;
 public final class LevelUpEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
-    private final OfflinePlayer player;
+    @Getter private final OfflinePlayer offlinePlayer;
     @Getter private final int newLevel;
     private boolean cancelled;
 
     public LevelUpEvent(OfflinePlayer player, int newLevel) {
-        this.player = player;
+        this.offlinePlayer = player;
         this.newLevel = newLevel;
         this.cancelled = false;
-    }
-
-    public OfflinePlayer getOfflinePlayer() {
-        return this.player;
     }
 
     @Override

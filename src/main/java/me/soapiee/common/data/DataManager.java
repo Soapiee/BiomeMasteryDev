@@ -80,7 +80,7 @@ public class DataManager {
     }
 
     public void loadData(BiomeMastery main, CommandSender sender) {
-        this.debugMode = main.isDebugMode();
+        debugMode = main.isDebugMode();
         setDefaultSettings(sender);
         createBiomeData(sender);
         startChecker(main);

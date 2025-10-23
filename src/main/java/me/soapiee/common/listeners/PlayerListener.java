@@ -72,21 +72,19 @@ public class PlayerListener implements Listener {
     public void onBiomeChange(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
+        Biome newBiome = event.getTo().getBlock().getBiome();
+
+        if (!playerBiomeMap.containsKey(uuid)) playerBiomeMap.put(uuid, newBiome);
+
         World previousWorld = event.getFrom().getWorld();
         Biome previousBiome = event.getFrom().getBlock().getBiome();
         World newWorld = event.getTo().getWorld();
-        Biome newBiome = event.getTo().getBlock().getBiome();
-        PlayerData playerData = dataManager.getPlayerData(event.getPlayer().getUniqueId());
-
-        if (!playerBiomeMap.containsKey(uuid)) {
-//            Utils.consoleMsg(ChatColor.YELLOW + "Player wasnt in playerBiome map, added them");
-            playerBiomeMap.put(uuid, newBiome);
-        }
-
-        if (previousWorld == newWorld)
+        if (previousWorld == newWorld) {
             if (previousBiome == newBiome) return;
             else if (previousBiome.name().equalsIgnoreCase(newBiome.name())) return;
+        }
 
+        PlayerData playerData = dataManager.getPlayerData(event.getPlayer().getUniqueId());
         if (!dataManager.playerInEnabledWorld(previousWorld)) return;
         setBiomeProgress(playerData, previousBiome);
 
@@ -97,14 +95,7 @@ public class PlayerListener implements Listener {
     private void setBiomeProgress(PlayerData playerData, Biome previousBiome) {
         if (!dataManager.playerInEnabledBiome(previousBiome)) return;
 
-        BiomeLevel previousBiomeData = playerData.getBiomeData(previousBiome);
-
-//        int progress = (int) ChronoUnit.SECONDS.between(previousBiomeData.getEntryTime(), LocalDateTime.now());
-
-//           Utils.consoleMsg(ChatColor.YELLOW + "Progress: " + progress);
-        //Progress is not added if they are in the biome for less than 5 seconds
-//        if (progress <= 5) return;
-
+        BiomeLevel previousBiomeData = playerData.getBiomeLevel(previousBiome);
         previousBiomeData.addProgress();
         previousBiomeData.clearEntryTime();
     }
@@ -115,7 +106,7 @@ public class PlayerListener implements Listener {
 //            Utils.consoleMsg(ChatColor.YELLOW + "new Biome: " + (newBiome != null ? newBiome.name() : "null"));
         if (newBiome == null) return;
 
-        BiomeLevel playerLevel = playerData.getBiomeData(newBiome);
+        BiomeLevel playerLevel = playerData.getBiomeLevel(newBiome);
         playerLevel.setEntryTime(LocalDateTime.now());
     }
 
@@ -140,6 +131,8 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onLevelUp(LevelUpEvent event) {
+        //TODO: Give player their reward
+
         OfflinePlayer player = event.getOfflinePlayer();
         if (!player.isOnline()) return;
 

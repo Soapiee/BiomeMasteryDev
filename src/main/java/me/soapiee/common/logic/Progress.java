@@ -31,7 +31,7 @@ public class Progress extends BukkitRunnable {
 
             Biome currentBiome = player.getLocation().getBlock().getBiome();
 
-            data.getBiomeData(currentBiome).addProgress();
+            data.getBiomeLevel(currentBiome).addProgress();
         }
         // Loop the list and add 1 minute progress
     }

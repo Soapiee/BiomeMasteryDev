@@ -6,6 +6,7 @@ import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -17,17 +18,15 @@ public class BiomeLevel {
     private final BiomeData biomeData;
     @Getter private int level;
     @Getter private int progress;
-    @Getter
-    @Setter
-    private LocalDateTime entryTime;
+    @Getter @Setter private LocalDateTime entryTime;
 
-    public BiomeLevel(OfflinePlayer player, BiomeData biomeData, int level, int progress) throws NullPointerException {
+    public BiomeLevel(@NotNull OfflinePlayer player, BiomeData biomeData, int level, int progress) throws NullPointerException {
         this.player = player;
         this.biomeData = biomeData;
         this.level = level;
         this.progress = progress;
 
-        if (player == null) throw new NullPointerException("Player is null");
+//        if (player == null) throw new NullPointerException("Player is null");
     }
 
     public BiomeLevel(OfflinePlayer player, BiomeData biomeData) {
@@ -39,7 +38,10 @@ public class BiomeLevel {
     }
 
     public void addProgress() {
+        if (getEntryTime() == null) return;
+
         int toAdd = (int) ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
+        entryTime = LocalDateTime.now();
 
         progress += toAdd;
         checkLevelUp();

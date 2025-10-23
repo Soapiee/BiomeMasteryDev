@@ -18,7 +18,7 @@ public class PotionReward extends Reward {
     public void give(Player player) {
         player.addPotionEffect(potion);
 
-        //add them to a list that checks when they leave the biome - so the effect can be removed
+        //TODO add them to a list that checks when they leave the biome - so the effect can be removed
     }
 
     @Override

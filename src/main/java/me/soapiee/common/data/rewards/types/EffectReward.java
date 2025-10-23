@@ -15,7 +15,7 @@ public class EffectReward extends Reward {
 
     @Override
     public void give(Player player) {
-
+        //TODO
     }
 
     @Override

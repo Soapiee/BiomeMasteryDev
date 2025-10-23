@@ -1,25 +1,15 @@
 package me.soapiee.common.data.rewards.types;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import me.soapiee.common.data.rewards.RewardType;
 
+@AllArgsConstructor
 public abstract class Reward implements RewardInterface {
 
-    protected RewardType type;
+    @Getter protected RewardType type;
 
-    public Reward(RewardType type) {
-        this.type = type;
-    }
-
-    @Override
-    public RewardType getType() {
-        return this.type;
-    }
-
-//    public abstract void give(Player player);
-
-//    public abstract String toString();
-
-//    public boolean equals(Object comparedObject) {
+    //    public boolean equals(Object comparedObject) {
 //        if (this == comparedObject) return true;
 //
 //        if (!(comparedObject instanceof Reward)) return false;
