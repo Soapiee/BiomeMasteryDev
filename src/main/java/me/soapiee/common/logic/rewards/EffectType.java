@@ -1,4 +1,4 @@
-package me.soapiee.common.data.rewards;
+package me.soapiee.common.logic.rewards;
 
 public enum EffectType {
 

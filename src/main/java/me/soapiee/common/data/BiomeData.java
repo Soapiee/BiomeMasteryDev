@@ -1,7 +1,7 @@
 package me.soapiee.common.data;
 
 import lombok.Getter;
-import me.soapiee.common.data.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.types.Reward;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -39,7 +39,7 @@ public class BiomeData {
     }
 
     public int getTargetDuration(int level) {
-        return levels.getOrDefault(level + 1, null);
+        return levels.getOrDefault(level + 1, 0);
     }
 
     public Reward getReward(int level) {
@@ -49,7 +49,7 @@ public class BiomeData {
     public int getMaxLevel() {
         int max = 0;
 
-        for (Integer level : levels.values()) {
+        for (Integer level : levels.keySet()) {
             if (level >= max) max = level;
         }
 

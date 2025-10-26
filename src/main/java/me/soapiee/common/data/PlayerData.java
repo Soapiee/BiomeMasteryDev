@@ -1,5 +1,6 @@
 package me.soapiee.common.data;
 
+import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeLevel;
 import me.soapiee.common.manager.MessageManager;
@@ -14,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,14 +36,14 @@ public class PlayerData {
     private final Logger logger;
     private final Object fileLock = new Object();
 
-    public final UUID uuid;
-    public final OfflinePlayer player;
-    public final Map<Biome, BiomeLevel> biomesMap;
+    private final UUID uuid;
+    @Getter private final OfflinePlayer player;
+    private final Map<Biome, BiomeLevel> biomesMap;
 
     private File file;
     private YamlConfiguration contents;
 
-    public PlayerData(BiomeMastery main, OfflinePlayer player) throws IOException, SQLException {
+    public PlayerData(BiomeMastery main, @NotNull OfflinePlayer player) throws IOException, SQLException {
         this.main = main;
         dataManager = main.getDataManager();
         messageManager = main.getMessageManager();
@@ -80,15 +82,45 @@ public class PlayerData {
             }
             contents = YamlConfiguration.loadConfiguration(file);
         }
-        Utils.consoleMsg(ChatColor.AQUA + "pre-existing file");
 
         for (Biome biome : dataManager.getEnabledBiomes()) {
-            int level = contents.getInt(biome + ".Level");
-            int progress = contents.getInt(biome + ".Progress");
-            BiomeLevel biomeLevel = new BiomeLevel(player, dataManager.getBiomeData(biome), level, progress);
+            final String playerName = player.getName();
+            final String biomeName = biome.name();
 
-            biomesMap.put(biome, biomeLevel);
-            Utils.consoleMsg(ChatColor.GREEN + "biomeLevel for " + biome.name() + " added (" + level + ":" + progress + ")");
+            if (!contents.isConfigurationSection(biomeName) || !contents.isSet(biomeName + ".Level") || !contents.isSet(biomeName + ".Progress")) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        synchronized (fileLock) {
+                            try {
+                                FileConfiguration localCopy = YamlConfiguration.loadConfiguration(file);
+
+                                localCopy.set(biomeName + ".Level", 0);
+                                localCopy.set(biomeName + ".Progress", 0);
+
+                                localCopy.save(file);
+                            } catch (IOException e) {
+                                main.getCustomLogger().logToFile(e, "Could not set " + biomeName + " config section for " + playerName);
+                            }
+                        }
+
+                        BiomeLevel biomeLevel = new BiomeLevel(player, dataManager.getBiomeData(biome));
+
+                        biomesMap.put(biome, biomeLevel);
+                        if (main.isDebugMode()) Utils.debugMsg(playerName,
+                                ChatColor.GREEN + biomeName + " data set (0:0)");
+                    }
+                }.runTaskAsynchronously(main);
+
+            } else {
+                int level = contents.getInt(biomeName + ".Level");
+                int progress = contents.getInt(biomeName + ".Progress");
+                BiomeLevel biomeLevel = new BiomeLevel(player, dataManager.getBiomeData(biome), level, progress);
+
+                biomesMap.put(biome, biomeLevel);
+                if (main.isDebugMode()) Utils.debugMsg(player.getName(),
+                        ChatColor.GREEN + biomeName + " data set (" + level + ":" + progress + ")");
+            }
         }
     }
 
@@ -98,7 +130,6 @@ public class PlayerData {
         for (Biome biome : dataManager.getEnabledBiomes()) {
             biomes.add(biome.name());
         }
-        Utils.consoleMsg(ChatColor.AQUA + "new file created");
 
         new BukkitRunnable() {
             @Override
@@ -122,7 +153,8 @@ public class PlayerData {
 
         for (Biome biome : dataManager.getEnabledBiomes()) {
             biomesMap.put(biome, new BiomeLevel(player, dataManager.getBiomeData(biome)));
-//            Utils.consoleMsg(ChatColor.GREEN + "biomeLevel for " + biome.name() + " added");
+            if (main.isDebugMode()) Utils.debugMsg(player.getName(),
+                    ChatColor.GREEN + biome.name() + " data set (0:0)");
         }
     }
 

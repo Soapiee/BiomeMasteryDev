@@ -1,6 +1,6 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
-import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
@@ -15,7 +15,7 @@ public class ItemReward extends Reward {
     private final ArrayList<ItemStack> itemList;
 
     public ItemReward(MessageManager messageManager, ArrayList<ItemStack> itemList) {
-        super(RewardType.ITEM);
+        super(RewardType.ITEM, true);
         this.messageManager = messageManager;
         this.itemList = itemList;
     }
@@ -42,9 +42,11 @@ public class ItemReward extends Reward {
         StringBuilder builder = new StringBuilder();
         int i = 1;
 
-        builder.append(type.toString().toLowerCase()).append("s: ");
         for (ItemStack item : itemList) {
-            builder.append(item.getAmount()).append(" ").append(item.getType().toString().toLowerCase().replace("_", " "));
+            int amount = item.getAmount();
+            builder.append(amount).append(" ")
+                    .append(Utils.capitalise(item.getType().toString()))
+                    .append((amount > 1 ? "s" : ""));
             if (itemList.size() > i) builder.append(", ");
             i++;
         }

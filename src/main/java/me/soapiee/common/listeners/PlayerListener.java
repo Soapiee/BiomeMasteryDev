@@ -1,6 +1,7 @@
 package me.soapiee.common.listeners;
 
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.data.DataManager;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeLevel;
@@ -62,8 +63,8 @@ public class PlayerListener implements Listener {
         playerBiomeMap.put(uuid, playerBiome);
 
         World playerWorld = player.getWorld();
-        if (!dataManager.playerInEnabledWorld(playerWorld)) return;
-        if (!dataManager.playerInEnabledBiome(playerBiome)) return;
+        if (!dataManager.isEnabledWorld(playerWorld)) return;
+        if (!dataManager.isEnabledBiome(playerBiome)) return;
 
         setBiomeStart(dataManager.getPlayerData(uuid), playerBiome);
     }
@@ -85,25 +86,29 @@ public class PlayerListener implements Listener {
         }
 
         PlayerData playerData = dataManager.getPlayerData(uuid);
-        if (!dataManager.playerInEnabledWorld(previousWorld)) return;
+        if (!dataManager.isEnabledWorld(previousWorld)) return;
         setBiomeProgress(playerData, previousBiome);
 
-        if (!dataManager.playerInEnabledWorld(newWorld)) return;
+        if (!dataManager.isEnabledWorld(newWorld)) return;
         setBiomeStart(playerData, newBiome);
     }
 
     private void setBiomeProgress(PlayerData playerData, Biome previousBiome) {
-        if (!dataManager.playerInEnabledBiome(previousBiome)) return;
+        if (!dataManager.isEnabledBiome(previousBiome)) return;
 
-        BiomeLevel previousBiomeData = playerData.getBiomeLevel(previousBiome);
-        previousBiomeData.addProgress();
-        previousBiomeData.clearEntryTime();
+        BiomeData biomeData = dataManager.getBiomeData(previousBiome);
+        BiomeLevel previousBiomeLevel = playerData.getBiomeLevel(previousBiome);
+
+        if (previousBiomeLevel.getLevel() >= biomeData.getMaxLevel()) return;
+
+        previousBiomeLevel.addProgress();
+        previousBiomeLevel.clearEntryTime();
     }
 
     private void setBiomeStart(PlayerData playerData, Biome newBiome) {
-        if (!dataManager.playerInEnabledBiome(newBiome)) return;
+        if (!dataManager.isEnabledBiome(newBiome)) return;
 
-        Utils.consoleMsg(ChatColor.DARK_PURPLE + "new Biome: " + (newBiome != null ? newBiome.name() : "null"));
+        if (main.isDebugMode()) Utils.debugMsg(playerData.getPlayer().getName(),ChatColor.DARK_PURPLE + "new Biome: " + (newBiome != null ? newBiome.name() : "null"));
         if (newBiome == null) return;
 
         BiomeLevel playerLevel = playerData.getBiomeLevel(newBiome);
@@ -118,7 +123,7 @@ public class PlayerListener implements Listener {
         Biome currentBiome = player.getLocation().getBlock().getBiome();
         PlayerData playerData = dataManager.getPlayerData(uuid);
 
-        if (dataManager.playerInEnabledWorld(currentWorld)) {
+        if (dataManager.isEnabledWorld(currentWorld)) {
             setBiomeProgress(playerData, currentBiome);
         }
 

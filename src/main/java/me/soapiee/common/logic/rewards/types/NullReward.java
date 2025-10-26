@@ -1,11 +1,11 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
-import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.logic.rewards.RewardType;
 
 public class NullReward extends Reward {
 
     public NullReward() {
-        super(RewardType.NONE);
+        super(RewardType.NONE, true);
     }
 
     @Override

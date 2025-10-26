@@ -1,6 +1,6 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
-import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.logic.rewards.RewardType;
 import org.bukkit.entity.Player;
 
 public class ExperienceReward extends Reward {
@@ -8,7 +8,7 @@ public class ExperienceReward extends Reward {
     private final int amount;
 
     public ExperienceReward(int amount) {
-        super(RewardType.EXPERIENCE);
+        super(RewardType.EXPERIENCE, true);
         this.amount = amount;
     }
 

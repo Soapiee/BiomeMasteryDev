@@ -2,11 +2,11 @@ package me.soapiee.common.data;
 
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.rewards.EffectType;
-import me.soapiee.common.data.rewards.RewardType;
-import me.soapiee.common.data.rewards.types.*;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.Checker;
+import me.soapiee.common.logic.rewards.EffectType;
+import me.soapiee.common.logic.rewards.RewardType;
+import me.soapiee.common.logic.rewards.types.*;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Utils;
@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class DataManager {
 
@@ -46,7 +43,7 @@ public class DataManager {
     private final HashMap<UUID, PlayerData> playerDataMap = new HashMap<>();
     private final HashMap<Biome, BiomeData> biomeDataMap = new HashMap<>();
     private final List<World> enabledWorlds = new ArrayList<>();
-    @Getter private final List<Biome> enabledBiomes = new ArrayList<>();
+    @Getter private final HashSet<Biome> enabledBiomes = new HashSet<>();
     @Getter private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
     @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
     @Getter private int updateInterval;
@@ -109,7 +106,6 @@ public class DataManager {
         if (levelsSection != null) {
             for (String key : config.getConfigurationSection("default_settings.levels").getKeys(false)) {
                 defaultLevels.put(Integer.parseInt(key), config.getInt("default_settings.levels." + key + ".target_duration"));
-//                Utils.consoleMsg(ChatColor.LIGHT_PURPLE + "Default level " + key + " duration: " + config.getInt("default_settings.levels." + key + ".target_duration"));
                 defaultRewards.put(Integer.parseInt(key), createReward(sender, "default_settings.levels." + key + "."));
             }
         }
@@ -156,10 +152,10 @@ public class DataManager {
     private void createBiomeData(CommandSender sender) {
         //Loops through the list of enabled biomes. Find it in the biomes config section, if it doesnt exist then set default settings
         for (Biome enabledBiome : enabledBiomes) {
-            if (debugMode) Utils.consoleMsg("&eEnabled biome: " + enabledBiome.name());
+            if (debugMode) Utils.debugMsg("", "&eEnabled biome: " + enabledBiome.name());
 
             boolean isDefault = config.getConfigurationSection("biomes." + enabledBiome.name()) == null;
-            if (debugMode) Utils.consoleMsg("&eIs default: " + isDefault);
+            if (debugMode) Utils.debugMsg("", "&eIs default: " + isDefault);
 
             BiomeData biomeData = new BiomeData(this, config, enabledBiome, isDefault, sender);
             biomeDataMap.put(enabledBiome, biomeData);
@@ -219,7 +215,10 @@ public class DataManager {
             return new NullReward();
         }
 
-        return new PotionReward(potionType, amplifier);
+        String temp = config.getString(path + "type", "temporary");
+        Utils.consoleMsg(ChatColor.RED + temp);
+
+        return new PotionReward(potionType, amplifier, (temp.equalsIgnoreCase("temporary")));
     }
 
     private Reward effectReward(CommandSender sender, String path) {
@@ -232,7 +231,9 @@ public class DataManager {
             return new NullReward();
         }
 
-        return new EffectReward(effectType);
+        boolean isTemp = config.getBoolean(path + "type", true);
+
+        return new EffectReward(effectType, isTemp);
     }
 
     private Reward currencyReward(CommandSender sender, String path) {
@@ -370,7 +371,7 @@ public class DataManager {
     }
 
     public void add(PlayerData data) {
-        playerDataMap.put(data.uuid, data);
+        playerDataMap.put(data.getPlayer().getUniqueId(), data);
     }
 
     public void remove(UUID uuid) {
@@ -385,7 +386,7 @@ public class DataManager {
         return playerDataMap.get(uuid);
     }
 
-    public boolean playerInEnabledWorld(World world) {
+    public boolean isEnabledWorld(World world) {
         for (World enabledWorlds : enabledWorlds) {
             if (enabledWorlds == world) return true;
         }
@@ -393,9 +394,9 @@ public class DataManager {
         return false;
     }
 
-    public boolean playerInEnabledBiome(Biome biome) {
+    public boolean isEnabledBiome(Biome biome) {
         for (Biome enabledBiome : enabledBiomes) {
-            if (enabledBiome == biome) return true;
+            if (biome == enabledBiome) return true;
         }
 
         return false;

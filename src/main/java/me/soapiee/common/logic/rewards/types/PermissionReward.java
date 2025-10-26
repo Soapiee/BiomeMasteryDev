@@ -1,6 +1,6 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
-import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.hooks.VaultHook;
 import org.bukkit.entity.Player;
 
@@ -12,7 +12,7 @@ public class PermissionReward extends Reward {
     private final ArrayList<String> permissions;
 
     public PermissionReward(VaultHook vaultHook, ArrayList<String> permission) {
-        super(RewardType.PERMISSION);
+        super(RewardType.PERMISSION, true);
         this.vaultHook = vaultHook;
         this.permissions = permission;
     }

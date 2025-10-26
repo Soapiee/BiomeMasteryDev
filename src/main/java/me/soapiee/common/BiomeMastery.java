@@ -99,8 +99,8 @@ public final class BiomeMastery extends JavaPlugin {
         dataManager.loadData(this, Bukkit.getConsoleSender());
 
         // Commands setup
-        getCommand("admin").setExecutor(new AdminCmd(this));
-        getCommand("placeholder").setExecutor(new UsageCmd(this));
+        getCommand("abiomemastery").setExecutor(new AdminCmd(dataManager, playerCache, messageManager, customLogger));
+        getCommand("biomemastery").setExecutor(new UsageCmd(dataManager, playerCache, messageManager));
 
         // Listeners setup
         playerListener = new PlayerListener(this);
@@ -127,5 +127,4 @@ public final class BiomeMastery extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Vault") == null) return null;
         else return vaultHook;
     }
-
 }

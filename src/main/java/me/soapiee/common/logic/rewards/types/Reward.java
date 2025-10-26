@@ -1,13 +1,14 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import me.soapiee.common.data.rewards.RewardType;
+import me.soapiee.common.logic.rewards.RewardType;
 
 @AllArgsConstructor
 public abstract class Reward implements RewardInterface {
 
-    @Getter protected RewardType type;
+    @Getter protected final RewardType type;
+    @Getter private final boolean isTemporary;
 
     //    public boolean equals(Object comparedObject) {
 //        if (this == comparedObject) return true;

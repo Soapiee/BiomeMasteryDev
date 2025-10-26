@@ -1,8 +1,12 @@
 package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.data.BiomeData;
+import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
+import me.soapiee.common.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -33,6 +37,7 @@ public class MessageManager {
             contents.load(file);
         } catch (Exception ex) {
             customLogger.logToFile(ex, get(Message.RELOADERROR));
+            return false;
         }
         return true;
     }
@@ -42,13 +47,14 @@ public class MessageManager {
             contents.save(file);
         } catch (Exception ex) {
             customLogger.logToFile(ex, ChatColor.RED + "Could not add new fields to messages.yml");
+            return false;
         }
         return true;
     }
 
     public String get(Message messageEnum) {
         String path = messageEnum.getPath();
-        String def = messageEnum.getDefault();
+        String def = messageEnum.getDefaultText();
 
         if (contents.isSet(path)) {
             return (contents.isList(path)) ? String.join("\n", contents.getStringList(path)) : contents.getString(path);
@@ -65,24 +71,38 @@ public class MessageManager {
         }
     }
 
+    public String getWithPlaceholder(Message messageEnum, BiomeData biomeData, BiomeLevel biomeLevel) {
+        String formattedBiomeName = Utils.capitalise(biomeData.getBiome().name());
+        int currentLevel = biomeLevel.getLevel();
+        String formattedTarget = Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
+        String formattedProgress = Utils.formatTargetDuration(biomeLevel.getProgress());
+
+        return get(messageEnum).replace("%biome%", formattedBiomeName)
+                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
+                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
+                .replace("%player_progress%", formattedProgress)
+                .replace("%target_duration_formatted%", formattedTarget);
+    }
+
     public String getWithPlaceholder(Message messageEnum, String string) {
         return get(messageEnum).replace("%player%", string)
-                .replace("%sign_ID%", string)
-                .replace("%game_ID%", string)
-                .replace("%loc_ID%", string)
-                .replace("%task_message%", string.replaceFirst(("(\\W)(\\D)"), ""))
-                .replace("%question%", string)
-                .replace("%correction_message%\n", (string.isEmpty()) ? "" : string + "\n")
-                .replace("%winners%", string)
-                .replace("%winner%", string);
+                .replace("%cmd_label%", string)
+                .replace("%biome%", string);
+    }
+
+    public String getWithPlaceholder(Message messageEnum, int level, Reward reward, String rewardStatus) {
+        return get(messageEnum).replace("%level%", String.valueOf(level))
+                .replace("%reward_name%", reward.toString())
+                .replace("%reward_status%", rewardStatus);
     }
 
     public String getWithPlaceholder(Message messageEnum, int integer) {
         String replacement = integer + " second" + (integer == 1 ? "" : "s");
 
-        return get(messageEnum).replace("%countdown%", replacement)
-                .replace("%round_countdown%", replacement)
-                .replace("%game_ID%", String.valueOf(integer));
+        return get(messageEnum).replace("%level%", String.valueOf(integer))
+//                .replace("%round_countdown%", replacement)
+                .replace("%example%", String.valueOf(integer))
+                .replace("%level%", String.valueOf(integer));
     }
 
 }

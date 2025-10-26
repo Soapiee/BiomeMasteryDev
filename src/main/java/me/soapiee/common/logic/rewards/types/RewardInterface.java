@@ -1,4 +1,4 @@
-package me.soapiee.common.data.rewards.types;
+package me.soapiee.common.logic.rewards.types;
 
 import org.bukkit.entity.Player;
 

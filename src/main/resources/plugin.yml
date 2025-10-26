@@ -5,17 +5,19 @@ main: me.soapiee.common.BiomeMastery
 api-version: '1.13'
 
 commands:
-  admin:
+  abiomemastery:
     description: 'admin commands'
-    usage: 'admin reload|contents'
-    permission: placeholder.admin
-  placeholder:
+    aliases: ["abm", "abiome"]
+    usage: 'abm reload'
+    permission: biomemastery.admin
+  biomemastery:
     description: 'placeholder commands'
+    aliases: ["bm", "biome"]
     usage: 'placeholder help'
-    permission: placeholder.placeholder
+    permission: biomemastery.player
 
 permissions:
-  placeholder.placeholder:
+  biomemastery.player:
     default: true
-  placeholder.admin:
+  biomemastery.admin:
     default: true

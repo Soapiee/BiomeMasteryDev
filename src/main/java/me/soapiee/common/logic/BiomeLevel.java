@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.logic.events.LevelUpEvent;
-import me.soapiee.common.util.Utils;
+import me.soapiee.common.logic.rewards.types.Reward;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Biome;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -20,17 +20,13 @@ public class BiomeLevel {
     private final BiomeData biomeData;
     @Getter private int level;
     @Getter private int progress;
-    @Getter
-    @Setter
-    private LocalDateTime entryTime;
+    @Getter @Setter private LocalDateTime entryTime;
 
-    public BiomeLevel(@NotNull OfflinePlayer player, BiomeData biomeData, int level, int progress) throws NullPointerException {
+    public BiomeLevel(@NotNull OfflinePlayer player, BiomeData biomeData, int level, int progress) {
         this.player = player;
         this.biomeData = biomeData;
         this.level = level;
         this.progress = progress;
-
-//        if (player == null) throw new NullPointerException("Player is null");
     }
 
     public BiomeLevel(OfflinePlayer player, BiomeData biomeData) {
@@ -47,16 +43,13 @@ public class BiomeLevel {
         int toAdd = (int) ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
         entryTime = LocalDateTime.now();
 
-        Utils.consoleMsg(ChatColor.GREEN.toString() + toAdd + " seconds added to player progress for biome " + biomeData.getBiome().name());
+//        Utils.consoleMsg(ChatColor.GREEN.toString() + toAdd + " seconds added to player progress for biome " + biomeData.getBiome().name());
 
         progress += toAdd;
         checkLevelUp();
     }
 
     private void checkLevelUp() {
-        int maxLevel = biomeData.getMaxLevel();
-        if (maxLevel == level) return;
-
         int targetTime = biomeData.getTargetDuration(level);
         if (progress < targetTime) return;
 
@@ -67,8 +60,20 @@ public class BiomeLevel {
             LevelUpEvent event = new LevelUpEvent(player, level);
             Bukkit.getPluginManager().callEvent(event);
 
-            if (maxLevel == level) return;
+            if (biomeData.getMaxLevel() == level) {
+                progress = 0;
+                break;
+            }
+
+            targetTime = biomeData.getTargetDuration(level);
         }
     }
 
+    public Reward getReward(){
+        return biomeData.getReward(level);
+    }
+
+    public Biome getBiome(){
+        return biomeData.getBiome();
+    }
 }
