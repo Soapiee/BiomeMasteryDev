@@ -1,6 +1,7 @@
 package me.soapiee.common.logic.events;
 
 import lombok.Getter;
+import me.soapiee.common.logic.BiomeLevel;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -12,11 +13,13 @@ public final class LevelUpEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     @Getter private final OfflinePlayer offlinePlayer;
     @Getter private final int newLevel;
+    @Getter private final BiomeLevel biomeLevel;
     private boolean cancelled;
 
-    public LevelUpEvent(OfflinePlayer player, int newLevel) {
+    public LevelUpEvent(OfflinePlayer player, int newLevel, BiomeLevel biomeLevel) {
         this.offlinePlayer = player;
         this.newLevel = newLevel;
+        this.biomeLevel = biomeLevel;
         this.cancelled = false;
     }
 
@@ -30,6 +33,7 @@ public final class LevelUpEvent extends Event implements Cancellable {
         this.cancelled = true;
     }
 
+    @Override
     public @NotNull HandlerList getHandlers() {
         return handlers;
     }

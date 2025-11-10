@@ -104,17 +104,17 @@ class DataManagerTest {
         assertTrue(actualValue.contains(Biome.NETHER_WASTES));
     }
 
-//    @Test
-//    void givenTypePotion_whenCreateReward_thenReturnPotionReward() {
-//        String path = "biome.plains.1";
-//        when(mockConfig.getString(path + "reward_type")).thenReturn("potion");
-//        when(mockConfig.getString(path + "reward_item")).thenReturn("jump:1");
-//        when(mockConfig.getString(path + "type", "temporary")).thenReturn("temporary");
-//
-//        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
-//
-//        assertInstanceOf(PotionReward.class, actualValue);
-//    }
+    @Test
+    void givenTypePotion_whenCreateReward_thenReturnPotionReward() {
+        String path = "biome.plains.1";
+        when(mockConfig.getString(path + "reward_type")).thenReturn("potion");
+        when(mockConfig.getString(path + "reward_item")).thenReturn("jump:1");
+        when(mockConfig.getString(path + "type", "temporary")).thenReturn("temporary");
+
+        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+
+        assertInstanceOf(PotionReward.class, actualValue);
+    }
 
     @Test
     void givenTypeEffect_whenCreateReward_thenReturnEffectReward() {

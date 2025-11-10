@@ -34,8 +34,9 @@ public class PlaceHolderAPIHook extends PlaceholderExpansion {
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String identifier) {
         if (offlinePlayer != null && offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
+//            PlayerData playerData = dataManager.getPlayerData(player.getUniqueId());
 
-            if (identifier.equalsIgnoreCase("example1")) {
+            if (identifier.equalsIgnoreCase("biomemastery_biome_level")) {
                 return "example1";
             }
             if (identifier.equalsIgnoreCase("example2")) {

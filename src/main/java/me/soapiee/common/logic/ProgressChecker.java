@@ -7,11 +7,11 @@ import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class Checker extends BukkitRunnable {
+public class ProgressChecker extends BukkitRunnable {
 
     private final DataManager dataManager;
 
-    public Checker(BiomeMastery main, long delay) {
+    public ProgressChecker(BiomeMastery main, long delay) {
         dataManager = main.getDataManager();
         runTaskTimer(main, 0, delay * 20);
     }
@@ -20,15 +20,15 @@ public class Checker extends BukkitRunnable {
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             Biome playerBiome = player.getLocation().getBlock().getBiome();
-            BiomeLevel playerLevel = dataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
-            int maxLevel = dataManager.getBiomeData(playerBiome).getMaxLevel();
 
-            if (playerLevel.getLevel() >= maxLevel) return;
-            if (!dataManager.isEnabledBiome(playerBiome)) return;
-            if (!dataManager.isEnabledWorld(player.getWorld())) return;
+            if (!dataManager.isEnabledBiome(playerBiome)) continue;
+            if (!dataManager.isEnabledWorld(player.getWorld())) continue;
+
+            BiomeLevel playerLevel = dataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
+            if (playerLevel.isMaxLevel()) continue;
 
             // TODO: Prevent this from being edited in two places at once
-            playerLevel.addProgress();
+            playerLevel.updateProgress();
         }
     }
 }

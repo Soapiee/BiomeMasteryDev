@@ -27,39 +27,7 @@ public final class BiomeMastery extends JavaPlugin {
     private VaultHook vaultHook;
     @Getter private Logger customLogger;
     @Getter private PlayerListener playerListener;
-    @Getter private boolean debugMode;
-
-
-    // TODO
-    // Every X time,
-    //    Player is checked if they're within a valid biome.
-    //    If true: players progress is checked. Progress = threshold - (seconds between now + entry time).
-    //    If progress is <=0 then they level up and a new entry time is set.
-    //
-    //
-    // A list of enabled biomes is created on server load
-    //    (if blacklist, all biomes are added, then the blacklisted ones are removed)
-    //    (if whitelist is used, only those in the whitelist are added)
-    //
-    //
-    // On player join,
-    //     Biome is established. World + Biome are checked against enabled worlds + biomes list.
-    //     If its a valid biome then entry time is recorded.
-    //
-    // During the biome change event,
-    //    Player is checked if they're within a valid biome.
-    //    If true: seconds between now + entry time are added to the players progress
-    //    players progress is checked
-    //    If progress is <=0 then they level up in the old biome.
-    //    A new entry time is set for the new biome and the entry time for the old biome is cleared
-    //
-    // On player quit,
-    //    Player is checked if they're within a valid biome.
-    //    If true: seconds between now + entry time are added to the players progress
-    //    players progress is checked
-    //    If progress is <=0 then they level up in the old biome.
-    //    A new entry time is set for the new biome and the entry time for the old biome is cleared
-
+    private boolean debugMode;
 
     @Override
     public void onEnable() {
@@ -96,11 +64,11 @@ public final class BiomeMastery extends JavaPlugin {
             return;
         }
 
-        dataManager.loadData(this, Bukkit.getConsoleSender());
+        dataManager.startChecker(this);
 
         // Commands setup
-        getCommand("abiomemastery").setExecutor(new AdminCmd(dataManager, playerCache, messageManager, customLogger));
-        getCommand("biomemastery").setExecutor(new UsageCmd(dataManager, playerCache, messageManager));
+        getCommand("abiomemastery").setExecutor(new AdminCmd(this));
+        getCommand("biomemastery").setExecutor(new UsageCmd(this));
 
         // Listeners setup
         playerListener = new PlayerListener(this);
@@ -118,6 +86,8 @@ public final class BiomeMastery extends JavaPlugin {
 
         dataManager.saveAll(false);
 
+        //TODO Remove all active rewards
+
         if (dataManager.getDatabase() != null) {
             dataManager.getDatabase().disconnect();
         }
@@ -126,5 +96,9 @@ public final class BiomeMastery extends JavaPlugin {
     public VaultHook getVaultHook() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) return null;
         else return vaultHook;
+    }
+
+    public boolean isDebugMode() {
+        return getConfig().getBoolean("debug_mode", false);
     }
 }

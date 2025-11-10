@@ -3,6 +3,8 @@ package me.soapiee.common.data;
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.rewards.PendingReward;
+import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
@@ -23,9 +25,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
@@ -39,6 +39,8 @@ public class PlayerData {
     private final UUID uuid;
     @Getter private final OfflinePlayer player;
     private final Map<Biome, BiomeLevel> biomesMap;
+    @Getter private final ArrayList<PendingReward> pendingRewards;
+    @Getter private final ArrayList<Reward> activeRewards;
 
     private File file;
     private YamlConfiguration contents;
@@ -51,6 +53,8 @@ public class PlayerData {
         uuid = player.getUniqueId();
         this.player = player;
         biomesMap = new ConcurrentHashMap<>();
+        pendingRewards = new ArrayList<>();
+        activeRewards = new ArrayList<>();
 
         switch (dataManager.getDataSaveType()) {
             case "database":
@@ -113,15 +117,21 @@ public class PlayerData {
                 }.runTaskAsynchronously(main);
 
             } else {
-                int level = contents.getInt(biomeName + ".Level");
-                int progress = contents.getInt(biomeName + ".Progress");
-                BiomeLevel biomeLevel = new BiomeLevel(player, dataManager.getBiomeData(biome), level, progress);
-
-                biomesMap.put(biome, biomeLevel);
-                if (main.isDebugMode()) Utils.debugMsg(player.getName(),
-                        ChatColor.GREEN + biomeName + " data set (" + level + ":" + progress + ")");
+                biomesMap.put(biome, readBiomeLevelData(biome));
             }
         }
+    }
+
+    private BiomeLevel readBiomeLevelData(Biome biome) {
+        String biomeName = biome.name();
+
+        int level = contents.getInt(biomeName + ".Level", 0);
+        int progress = contents.getInt(biomeName + ".Progress", 0);
+
+        if (main.isDebugMode()) Utils.debugMsg(player.getName(),
+                ChatColor.GREEN + biomeName + " data set (" + level + ":" + progress + ")");
+
+        return new BiomeLevel(player, dataManager.getBiomeData(biome), level, progress);
     }
 
     private void createFile() {
@@ -159,10 +169,10 @@ public class PlayerData {
     }
 
     private void saveFile(boolean async) {
-        for (Biome biomeKey : dataManager.getEnabledBiomes()) {
+        for (final Biome biomeKey : biomesMap.keySet()) {
             final String biome = biomeKey.name();
             final int level = getBiomeLevel(biomeKey).getLevel();
-            final int progress = getBiomeLevel(biomeKey).getProgress();
+            final long progress = getBiomeLevel(biomeKey).getProgress();
             final String playerName = player.getName();
 
             if (async) {
@@ -241,11 +251,11 @@ public class PlayerData {
     private void saveDatabase(boolean async) {
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
-                for (final Biome biome : dataManager.getEnabledBiomes()) {
+                for (final Biome biome : biomesMap.keySet()) {
                     try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                          PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
                         statement.setInt(1, getBiomeLevel(biome).getLevel());
-                        statement.setInt(2, getBiomeLevel(biome).getProgress());
+                        statement.setLong(2, getBiomeLevel(biome).getProgress());
                         statement.setString(3, uuid.toString());
                         statement.executeUpdate();
 
@@ -260,7 +270,7 @@ public class PlayerData {
                 try (Connection connection = dataManager.getDatabase().getConnection().getConnection();
                      PreparedStatement statement = connection.prepareStatement("UPDATE " + biome.name() + " SET LEVEL=?, PROGRESS=? WHERE UUID=?;")) {
                     statement.setInt(1, getBiomeLevel(biome).getLevel());
-                    statement.setInt(2, getBiomeLevel(biome).getProgress());
+                    statement.setLong(2, getBiomeLevel(biome).getProgress());
                     statement.setString(3, uuid.toString());
                     statement.executeUpdate();
 
@@ -274,6 +284,30 @@ public class PlayerData {
     public BiomeLevel getBiomeLevel(Biome biome) {
         return biomesMap.get(biome);
     }
+    public ArrayList<BiomeLevel> getBiomeLevels() {
+        return new ArrayList<>(biomesMap.values());
+    }
 
+    public boolean hasPendingRewards() {
+        return !pendingRewards.isEmpty();
+    }
+    public void addPendingReward(PendingReward pendingReward) {
+        pendingRewards.add(pendingReward);
+    }
+    public void clearPendingRewards() {
+        pendingRewards.clear();
+    }
 
+    public boolean hasActiveRewards() {
+        return !activeRewards.isEmpty();
+    }
+    public void addActiveReward(Reward reward) {
+        activeRewards.add(reward);
+    }
+    public void clearActiveRewards() {
+        activeRewards.clear();
+    }
+    public void clearActiveReward(Reward reward) {
+        activeRewards.remove(reward);
+    }
 }

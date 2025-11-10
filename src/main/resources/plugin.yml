@@ -7,7 +7,7 @@ api-version: '1.13'
 commands:
   abiomemastery:
     description: 'admin commands'
-    aliases: ["abm", "abiome"]
+    aliases: ["abm", "abiome", "adminbm"]
     usage: 'abm reload'
     permission: biomemastery.admin
   biomemastery:

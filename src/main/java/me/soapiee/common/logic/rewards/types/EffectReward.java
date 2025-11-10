@@ -17,6 +17,19 @@ public class EffectReward extends Reward {
     @Override
     public void give(Player player) {
         //TODO
+
+        //TODO Add persistent data key
+    }
+
+    public void remove(Player player){
+        //TODO
+
+        //TODO Remove persistent data key
+    }
+
+    public EffectType getReward() {
+        //TODO Get persistent data key
+        return effect;
     }
 
     @Override

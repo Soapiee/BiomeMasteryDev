@@ -36,7 +36,7 @@ public class Utils {
         return builder.toString();
     }
 
-    public static String formatTargetDuration(int targetDuration){
+    public static String formatTargetDuration(long targetDuration){
         double duration = targetDuration;
         String unit = "s";
 
@@ -52,7 +52,7 @@ public class Utils {
         }
 
         DecimalFormat df = new DecimalFormat("#.#");
-        return df.format(Math.floor(duration)) + unit + (duration < 2 ? "" : "s");
+        return df.format(Math.floor(duration)) + unit + (!unit.equalsIgnoreCase("s") ? (duration < 2 ? "" : "s") : "");
     }
 
     public static String colour(String message) { // 1.8 and above

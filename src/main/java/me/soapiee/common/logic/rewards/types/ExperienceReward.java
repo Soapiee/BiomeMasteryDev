@@ -19,6 +19,6 @@ public class ExperienceReward extends Reward {
 
     @Override
     public String toString() {
-        return amount + " exp";
+        return amount + " exp level" + (amount != 1 ? "s" : "");
     }
 }
