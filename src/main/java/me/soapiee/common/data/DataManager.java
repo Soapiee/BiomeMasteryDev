@@ -1,13 +1,14 @@
 package me.soapiee.common.data;
 
+import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.ProgressChecker;
-import me.soapiee.common.logic.CommandCooldown;
 import me.soapiee.common.logic.rewards.EffectType;
 import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.logic.rewards.types.*;
+import me.soapiee.common.manager.CommandCooldownManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Utils;
@@ -48,39 +49,44 @@ public class DataManager {
     @Getter private final HashMap<Integer, Integer> defaultLevels = new HashMap<>();
     @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
     @Getter private int updateInterval;
-    @Getter private final CommandCooldown commandCooldown;
+    @Getter private final CommandCooldownManager cooldownManager;
     private ProgressChecker progressChecker;
 
     public DataManager(FileConfiguration config,
                        MessageManager messageManager,
                        VaultHook vaultHook,
                        Logger logger,
+                       CommandCooldownManager cooldownManager,
                        boolean debugMode) {
         this.messageManager = messageManager;
-        this.logger = logger;
         this.vaultHook = vaultHook;
+        this.logger = logger;
+        this.cooldownManager = cooldownManager;
         this.config = config;
         this.debugMode = debugMode;
 
         setDefaultSettings(Bukkit.getConsoleSender());
         createAllBiomeData(Bukkit.getConsoleSender());
         updateInterval = config.getInt("settings.update_interval", 60);
-        commandCooldown = new CommandCooldown(config.getInt("settings.command_cooldown", 3));
     }
 
-    public void initialise(BiomeMastery main) throws IOException, SQLException, CommunicationException {
+    public void initialise(BiomeMastery main) throws IOException, SQLException, CommunicationException, HikariPool.PoolInitializationException {
         if (config.getBoolean("database.enabled")) {
             dataSaveType = "database";
             database = new HikariCPConnection(main.getConfig());
-            database.connect();
+            database.connect(enabledBiomes);
+            Utils.consoleMsg(ChatColor.DARK_GREEN + "Database enabled.");
         } else {
+            initialiseFiles(main);
+        }
+    }
+
+    public void initialiseFiles(BiomeMastery main) throws IOException {
             database = null;
             dataSaveType = "files";
 
-            Files.createDirectories(Paths.get(main.getDataFolder() + File.separator + "playerData"));
-
+            Files.createDirectories(Paths.get(main.getDataFolder() + File.separator + "Data" + File.separator + "BiomeLevels"));
             Utils.consoleMsg(ChatColor.DARK_GREEN + "File Storage enabled.");
-        }
     }
 
     public void reloadData(BiomeMastery main) {
@@ -88,7 +94,7 @@ public class DataManager {
         debugMode = main.isDebugMode();
         config = main.getConfig();
         updateInterval = config.getInt("settings.update_interval", 60);
-        commandCooldown.updateThreshold(config.getInt("settings.command_cooldown", 3));
+        cooldownManager.updateThreshold(config.getInt("settings.command_cooldown", 3));
 //
         startChecker(main);
     }
@@ -121,7 +127,7 @@ public class DataManager {
         //Make list of enabled biomes + create the biome data
         enabledBiomes.clear();
         boolean whiteList = config.getBoolean("default_biome_settings.use_blacklist_as_whitelist", true);
-        if (!config.isSet("default_biome_settings.biomes_blacklist")){
+        if (!config.isSet("default_biome_settings.biomes_blacklist")) {
             config.set("default_biome_settings.biomes_blacklist", new ArrayList<>());
         }
         List<String> listedBiomes = config.getStringList("default_biome_settings.biomes_blacklist");
@@ -166,7 +172,7 @@ public class DataManager {
         }
     }
 
-    public void createBiomeData(CommandSender sender, Biome biome){
+    public void createBiomeData(CommandSender sender, Biome biome) {
         if (debugMode) Utils.debugMsg("", "&eEnabled biome: " + biome.name());
 
         boolean isDefault = config.getConfigurationSection("biomes." + biome.name()) == null;
@@ -338,6 +344,11 @@ public class DataManager {
     private Reward permissionReward(CommandSender sender, String path) {
         ArrayList<String> permissionList = new ArrayList<>();
 
+        if (vaultHook == null) {
+            createLog(sender, path, null, "vault hook");
+            return new NullReward();
+        }
+
         if (config.isString(path + "reward_item"))
             permissionList.add(config.getString(path + "reward_item"));
 
@@ -420,6 +431,10 @@ public class DataManager {
 
     public BiomeData getBiomeData(Biome biome) {
         return biomeDataMap.getOrDefault(biome, null);
+    }
+
+    public BiomeData getBiomeData(String biome) throws IllegalArgumentException {
+        return biomeDataMap.getOrDefault(Biome.valueOf(biome), null);
     }
 
     public void saveAll(boolean async) {

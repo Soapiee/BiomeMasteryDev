@@ -125,6 +125,11 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
             sendHelpMessage(sender, label);
             return true;
         }
+        // Incorrect command
+        if (args.length < 2) {
+            sendHelpMessage(sender, label);
+            return true;
+        }
 
         // /abm reset <player> <biome>
         // /abm set|add|remove <player> <biome> X - Sets the players level

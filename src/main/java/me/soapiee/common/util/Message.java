@@ -45,7 +45,7 @@ public enum Message {
     REWARDCLAIMINBIOME("reward_claimable_in_biome", "&5Claimable when in the %biome% biome"),
     REWARDACTIVATE("reward_status_activate", "&5Click to activate"),
     REWARDDEACTIVATE("reward_status_deactivate", "&5Click to de-activate"),
-    CMDONCOOLDOWN("command_on_cooldown", "&cYour must wait &e%cooldown% &cbefore you can use this command again"),
+    CMDONCOOLDOWN("command_on_cooldown", "&cYou must wait &e%cooldown% &cbefore you can use this command again"),
     LEVELLEDUP("levelled_up", "&aYou levelled up to level &e%level% &ain the %biome% &e&abiome"),
     REWARDACTIVATED("reward_activated", "&aYou activated the reward &e%reward%"),
     REWARDDEACTIVATED("reward_deactivated", "&aYou de-activated the reward &e%reward%"),

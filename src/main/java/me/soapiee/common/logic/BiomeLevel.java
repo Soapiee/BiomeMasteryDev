@@ -100,7 +100,6 @@ public class BiomeLevel {
         if (newProgress < 0) return -1;
 
         if (entryTime != null) entryTime = LocalDateTime.now();
-        Utils.consoleMsg(ChatColor.GREEN.toString() + newProgress + " seconds set as players progress for biome " + biomeData.getBiome().name());
 
         progress = newProgress;
         if (checkLevelUp() == 2) return -2;

@@ -10,6 +10,7 @@ import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
 import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.manager.PendingRewardsManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
@@ -36,6 +37,7 @@ public class PlayerListener implements Listener {
     private final BiomeMastery main;
     private final DataManager dataManager;
     private final MessageManager messageManager;
+    private final PendingRewardsManager pendingRewardsManager;
     private final Logger logger;
 
     private final Map<UUID, Biome> playerBiomeMap;
@@ -44,6 +46,7 @@ public class PlayerListener implements Listener {
         this.main = main;
         dataManager = main.getDataManager();
         messageManager = main.getMessageManager();
+        pendingRewardsManager = main.getPendingRewardsManager();
         logger = main.getCustomLogger();
         playerBiomeMap = new HashMap<>();
     }
@@ -65,26 +68,19 @@ public class PlayerListener implements Listener {
             }
         } else playerData = dataManager.getPlayerData(player.getUniqueId());
 
-        checkPendingRewards(player, playerData);
+        checkPendingRewards(player);
         playerBiomeMap.put(uuid, playerBiome);
 
         World playerWorld = player.getWorld();
         if (!dataManager.isEnabledWorld(playerWorld)) return;
         if (!dataManager.isEnabledBiome(playerBiome)) return;
 
-        setBiomeStart(dataManager.getPlayerData(uuid), playerBiome);
+        setBiomeStart(playerData, playerBiome);
     }
 
-    private void checkPendingRewards(Player player, PlayerData playerData) {
-        if (!playerData.hasPendingRewards()) return;
-        if (main.isDebugMode()) Utils.debugMsg(player.getName(), "&ahas pending rewards");
-
-        for (PendingReward reward : playerData.getPendingRewards()) {
-            reward.getReward().give(player);
-            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(
-                    Message.PENDINGREWARDRECIEVED, reward.getLevel(), reward.getReward(), reward.getBiome())));
-        }
-        playerData.clearPendingRewards();
+    private void checkPendingRewards(Player player) {
+        pendingRewardsManager.giveAll(player);
+        pendingRewardsManager.removeAll(player.getUniqueId());
     }
 
     @EventHandler
@@ -110,7 +106,7 @@ public class PlayerListener implements Listener {
             Utils.debugMsg(playerName, ChatColor.BLUE + "Changed biome: " + previousBiome.name() + " -> " + newBiome.name());
 
         if (playerData.hasActiveRewards()) {
-            clearActiveRewards(player, playerData);
+            playerData.clearActiveRewards();
             player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDSDEACTIVATED, previousBiome.name())));
         }
 
@@ -125,18 +121,6 @@ public class PlayerListener implements Listener {
                 Utils.debugMsg(playerName, ChatColor.BLUE + "New biome (" + newBiome.name() + ") is enabled, progress started");
             setBiomeStart(playerData, newBiome);
         }
-    }
-
-    private void clearActiveRewards(Player player, PlayerData playerData) {
-        for (Reward reward : playerData.getActiveRewards()) {
-            if (reward instanceof PotionReward) {
-                ((PotionReward) reward).remove(player);
-            }
-            if (reward instanceof EffectReward) {
-                ((EffectReward) reward).remove(player);
-            }
-        }
-        playerData.clearActiveRewards();
     }
 
     private void setBiomeProgress(PlayerData playerData, Biome previousBiome) {
@@ -168,7 +152,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        if (playerData.hasActiveRewards()) clearActiveRewards(player, playerData);
+        if (playerData.hasActiveRewards()) playerData.clearActiveRewards();
 
         if (dataManager.isEnabledWorld(currentWorld)) {
             if (dataManager.isEnabledBiome(currentBiome)) setBiomeProgress(playerData, currentBiome);
@@ -190,7 +174,7 @@ public class PlayerListener implements Listener {
         if (!offlinePlayer.isOnline()) {
             if (!reward.isTemporary()) return;
             if (main.isDebugMode()) Utils.debugMsg(offlinePlayer.getName(), "&eAdded Pending Reward");
-            playerData.addPendingReward(new PendingReward(event.getNewLevel(), biomeLevel.getBiome(), reward));
+            pendingRewardsManager.add(offlinePlayer.getUniqueId(), new PendingReward(event.getNewLevel(), biomeLevel.getBiome(), reward));
             return;
         }
 

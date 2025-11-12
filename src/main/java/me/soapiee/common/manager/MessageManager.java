@@ -17,6 +17,7 @@ public class MessageManager {
 
     private final BiomeMastery main;
     private final Logger customLogger;
+
     private final File file;
     private final YamlConfiguration contents;
 

@@ -5,11 +5,11 @@ import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.data.DataManager;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.CommandCooldown;
 import me.soapiee.common.logic.rewards.EffectType;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
 import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.manager.CommandCooldownManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.*;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
     private final PlayerCache playerCache;
     private final MessageManager messageManager;
     private final Logger customLogger;
+    private final CommandCooldownManager cooldownManager;
 
     public UsageCmd(BiomeMastery main) {
         this.main = main;
@@ -43,6 +45,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         playerCache = main.getPlayerCache();
         messageManager = main.getMessageManager();
         customLogger = main.getCustomLogger();
+        cooldownManager = main.getCooldownManager();
     }
 
     @Override
@@ -176,7 +179,6 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         try {
             biome = Biome.valueOf(value);
         } catch (IllegalArgumentException error) {
-            sender.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.INVALIDBIOME, value)));
             return null;
         }
 
@@ -288,8 +290,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
     }
 
     private void displayInfo(CommandSender sender, OfflinePlayer target) {
-        CommandCooldown commandCooldown = dataManager.getCommandCooldown();
-        int cooldown = (int) commandCooldown.getCooldown(sender);
+        int cooldown = (int) cooldownManager.getCooldown(sender);
         if (cooldown > 0) {
             sender.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown)));
             return;
@@ -322,13 +323,12 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
             if (i % 3 == 0) builder.append("\n");
         }
 
-        commandCooldown.addCooldown(sender);
+        cooldownManager.addCooldown(sender);
         sender.sendMessage(Utils.colour(builder.toString()));
     }
 
     private void displayBiomeInfo(CommandSender sender, OfflinePlayer target, Biome biome) {
-        CommandCooldown commandCooldown = dataManager.getCommandCooldown();
-        int cooldown = (int) commandCooldown.getCooldown(sender);
+        int cooldown = (int) cooldownManager.getCooldown(sender);
         if (cooldown > 0) {
             sender.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown)));
             return;
@@ -355,7 +355,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
                             getRewardStatus(target, biomeData, i, biomeLevel.getLevel())));
         }
 
-        commandCooldown.addCooldown(sender);
+        cooldownManager.addCooldown(sender);
         sender.sendMessage(Utils.colour(builder.toString()));
     }
 

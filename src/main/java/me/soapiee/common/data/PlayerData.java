@@ -3,7 +3,8 @@ package me.soapiee.common.data;
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.rewards.PendingReward;
+import me.soapiee.common.logic.rewards.types.EffectReward;
+import me.soapiee.common.logic.rewards.types.PotionReward;
 import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
@@ -16,6 +17,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +27,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
@@ -39,7 +44,6 @@ public class PlayerData {
     private final UUID uuid;
     @Getter private final OfflinePlayer player;
     private final Map<Biome, BiomeLevel> biomesMap;
-    @Getter private final ArrayList<PendingReward> pendingRewards;
     @Getter private final ArrayList<Reward> activeRewards;
 
     private File file;
@@ -53,30 +57,23 @@ public class PlayerData {
         uuid = player.getUniqueId();
         this.player = player;
         biomesMap = new ConcurrentHashMap<>();
-        pendingRewards = new ArrayList<>();
         activeRewards = new ArrayList<>();
 
         switch (dataManager.getDataSaveType()) {
             case "database":
-                for (Biome key : dataManager.getEnabledBiomes()) {
-                    readDatabase(key.toString(), (player2, results, error) -> {
-                        if (error != null) {
-                            logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
-                            return;
-                        }
-                        biomesMap.put(key, results);
-                    });
-                }
+                readData();
                 break;
 
             case "files":
-                file = new File(main.getDataFolder() + File.separator + "playerData", uuid + ".yml");
+                file = new File(main.getDataFolder() + File.separator + "Data" + File.separator + "BiomeLevels", uuid + ".yml");
                 contents = new YamlConfiguration();
 
                 readFile();
                 break;
         }
     }
+
+//  +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+ FILE STORAGE METHODS +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+
 
     private void readFile() {
         synchronized (fileLock) {
@@ -207,12 +204,29 @@ public class PlayerData {
         }
     }
 
-    public void saveData(boolean async) {
-        if (dataManager.getDataSaveType().equalsIgnoreCase("database")) saveDatabase(async);
-        else saveFile(async);
+//  +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+ DATABASE METHODS +_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+
+
+    private void readData(){
+        for (Biome key : dataManager.getEnabledBiomes()) {
+            biomesMap.put(key, new BiomeLevel(player, dataManager.getBiomeData(key)));
+        }
+
+        for (Biome key : dataManager.getEnabledBiomes()) {
+            getPlayerData(key.name(), (player2, results, error) -> {
+                if (error != null) {
+                    logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
+                    return;
+                }
+                
+                biomesMap.get(key).setLevel(results.getLevel());
+                biomesMap.get(key).setProgress(results.getProgress());
+            });
+        }
     }
 
-    private void readDatabase(final String table, final Callback<BiomeLevel> callback) {
+    private void getPlayerData(final String table, final Callback<BiomeLevel> callback) {
+        final BiomeData biomeData = dataManager.getBiomeData(table);
+
         Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
 
             //Check it exists, and if not, create entry
@@ -231,24 +245,24 @@ public class PlayerData {
                         createStatement.setInt(3, 0);
                         createStatement.executeUpdate();
                     }
-//                    biomeLevel = new BiomeLevel(main, player);
-//                    Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, biomeLevel, null));
+                    biomeLevel = new BiomeLevel(player, biomeData);
+                    Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, biomeLevel, null));
                     return;
                 }
 
                 //Get data
                 int level = results.getInt("LEVEL");
                 int progress = results.getInt("PROGRESS");
-//                biomeLevel = new BiomeLevel(main, player, );
+                biomeLevel = new BiomeLevel(player, biomeData, level, progress);
 
-//                Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, biomeLevel, null));
+                Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, biomeLevel, null));
             } catch (SQLException e) {
-//                Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, null, e));
+                Bukkit.getScheduler().runTask(main, () -> callback.onQueryDone(player, null, e));
             }
         });
     }
 
-    private void saveDatabase(boolean async) {
+    private void saveDatabaseEntry(boolean async) {
         if (async) {
             Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
                 for (final Biome biome : biomesMap.keySet()) {
@@ -281,32 +295,46 @@ public class PlayerData {
         }
     }
 
+    //  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_  OBJECT METHODS _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-
+
+    public void saveData(boolean async) {
+        if (dataManager.getDataSaveType().equalsIgnoreCase("database")) saveDatabaseEntry(async);
+        else saveFile(async);
+    }
+
     public BiomeLevel getBiomeLevel(Biome biome) {
         return biomesMap.get(biome);
     }
+
     public ArrayList<BiomeLevel> getBiomeLevels() {
         return new ArrayList<>(biomesMap.values());
-    }
-
-    public boolean hasPendingRewards() {
-        return !pendingRewards.isEmpty();
-    }
-    public void addPendingReward(PendingReward pendingReward) {
-        pendingRewards.add(pendingReward);
-    }
-    public void clearPendingRewards() {
-        pendingRewards.clear();
     }
 
     public boolean hasActiveRewards() {
         return !activeRewards.isEmpty();
     }
+
     public void addActiveReward(Reward reward) {
         activeRewards.add(reward);
     }
+
     public void clearActiveRewards() {
+        if (player.isOnline()) {
+            Player onlinePlayer = player.getPlayer();
+
+            for (Reward reward : getActiveRewards()) {
+                if (reward instanceof PotionReward) {
+                    ((PotionReward) reward).remove(onlinePlayer);
+                }
+                if (reward instanceof EffectReward) {
+                    ((EffectReward) reward).remove(onlinePlayer);
+                }
+            }
+        }
+
         activeRewards.clear();
     }
+
     public void clearActiveReward(Reward reward) {
         activeRewards.remove(reward);
     }

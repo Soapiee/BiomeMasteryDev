@@ -3,6 +3,7 @@ package me.soapiee.common.data;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.rewards.types.*;
+import me.soapiee.common.manager.CommandCooldownManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.util.Logger;
 import org.bukkit.Bukkit;
@@ -36,22 +37,24 @@ class DataManagerTest {
     void beforeEach() {
         BiomeMastery mockMain = mock(BiomeMastery.class);
         mockConfig = mock(org.bukkit.configuration.file.FileConfiguration.class);
-        Logger mockLogger = mock(Logger.class);
         MessageManager mockMessageManager = mock(MessageManager.class);
         VaultHook mockVaultHook = mock(VaultHook.class);
+        Logger mockLogger = mock(Logger.class);
+        CommandCooldownManager mockCooldownManager = mock(CommandCooldownManager.class);
         ConsoleCommandSender mockConsoleSender = mock(ConsoleCommandSender.class);
 
         // mock BiomeMastery behavior
         when(mockMain.getConfig()).thenReturn(mockConfig);
-        when(mockMain.getCustomLogger()).thenReturn(mockLogger);
-        when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
-        when(mockMain.getVaultHook()).thenReturn(mockVaultHook);
+//        when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
+//        when(mockMain.getVaultHook()).thenReturn(mockVaultHook);
+//        when(mockMain.getCustomLogger()).thenReturn(mockLogger);
+//        when(mockMain.getCooldownManager()).thenReturn(mockCooldownManager);
 
         // mock Bukkit static methods
         mockedBukkit = Mockito.mockStatic(Bukkit.class);
         mockedBukkit.when(Bukkit::getConsoleSender).thenReturn(mockConsoleSender);
 
-        dataManager = new DataManager(mockConfig, mockMessageManager, mockVaultHook, mockLogger, false);
+        dataManager = new DataManager(mockConfig, mockMessageManager, mockVaultHook, mockLogger, mockCooldownManager, false);
     }
 
     @AfterEach

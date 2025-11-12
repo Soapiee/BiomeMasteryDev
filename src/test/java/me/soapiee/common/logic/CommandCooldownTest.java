@@ -1,5 +1,9 @@
 package me.soapiee.common.logic;
 
+import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.manager.CommandCooldownManager;
+import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.util.Logger;
 import org.bukkit.command.ConsoleCommandSender;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,16 +12,25 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CommandCooldownTest {
 
-    private CommandCooldown commandCooldown;
+    private CommandCooldownManager mockCooldownManager;
     private ConsoleCommandSender mockConsole;
 
     @BeforeEach
     void beforeEach() {
-        commandCooldown = new CommandCooldown(5);
+        BiomeMastery mockMain = mock(BiomeMastery.class);
         mockConsole = mock(ConsoleCommandSender.class);
+        MessageManager mockMessageManager = mock(MessageManager.class);
+        Logger mockLogger = mock(Logger.class);
+
+        when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
+        when(mockMain.getCustomLogger()).thenReturn(mockLogger);
+        when(mockMain.getCooldownManager()).thenReturn(mockCooldownManager);
+
+        mockCooldownManager = new CommandCooldownManager(mockMain, 5);
     }
 
     @AfterEach
@@ -26,24 +39,24 @@ class CommandCooldownTest {
 
     @Test
     void givenBiomeLevel_whenInitialised_thenReturnNotNull() {
-        assertNotNull(commandCooldown);
+        assertNotNull(mockCooldownManager);
     }
 
     @Test
     void givenUUID_whenGetCooldown_thenReturn5Seconds() {
-        commandCooldown.addCooldown(mockConsole);
-        assertEquals(5, commandCooldown.getCooldown(mockConsole));
+        mockCooldownManager.addCooldown(mockConsole);
+        assertEquals(5, mockCooldownManager.getCooldown(mockConsole));
     }
 
     @Test
     void givenUUID_whenGetCooldown_thenReturnNoCooldown() {
-        assertEquals(0, commandCooldown.getCooldown(mockConsole));
+        assertEquals(0, mockCooldownManager.getCooldown(mockConsole));
     }
 
     @Test
     void givenNewThreshold_whenUpdateThreshold_thenReturnNewThreshold() {
-        commandCooldown.updateThreshold(2);
-        commandCooldown.addCooldown(mockConsole);
-        assertEquals(2, commandCooldown.getCooldown(mockConsole));
+        mockCooldownManager.updateThreshold(2);
+        mockCooldownManager.addCooldown(mockConsole);
+        assertEquals(2, mockCooldownManager.getCooldown(mockConsole));
     }
 }
