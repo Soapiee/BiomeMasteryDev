@@ -1,6 +1,5 @@
 package me.soapiee.common.logic;
 
-import me.soapiee.common.data.BiomeData;
 import org.bukkit.OfflinePlayer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +45,8 @@ class BiomeLevelTest {
 
     @Test
     void given0_whenSetLevel_thenReturnNewLevel() {
+        biomeLevel.setLevel(4);
+
         int actualValue = biomeLevel.setLevel(0);
         assertEquals(0, actualValue);
     }

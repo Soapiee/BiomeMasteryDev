@@ -1,17 +1,13 @@
 package me.soapiee.common;
 
-import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Getter;
 import me.soapiee.common.commands.AdminCmd;
 import me.soapiee.common.commands.UsageCmd;
-import me.soapiee.common.data.DataManager;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.hooks.PlaceHolderAPIHook;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.listeners.PlayerListener;
-import me.soapiee.common.manager.CommandCooldownManager;
-import me.soapiee.common.manager.MessageManager;
-import me.soapiee.common.manager.PendingRewardsManager;
+import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.PlayerCache;
 import me.soapiee.common.util.Utils;
@@ -20,9 +16,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.naming.CommunicationException;
 import java.io.IOException;
-import java.sql.SQLException;
 
 public final class BiomeMastery extends JavaPlugin {
 
@@ -31,17 +25,17 @@ public final class BiomeMastery extends JavaPlugin {
     @Getter private PlayerCache playerCache;
     private VaultHook vaultHook;
     @Getter private Logger customLogger;
-    @Getter private PlayerListener playerListener;
     @Getter private PendingRewardsManager pendingRewardsManager;
     @Getter private CommandCooldownManager cooldownManager;
+//    @Getter private UpdateChecker updateChecker;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
         playerCache = new PlayerCache(Bukkit.getServer().getOfflinePlayers());
-        messageManager = new MessageManager(this);
         customLogger = new Logger(this);
+        messageManager = new MessageManager(this);
         cooldownManager = new CommandCooldownManager(this, getConfig().getInt("settings.command_cooldown", 3));
 
         // Hooks
@@ -59,22 +53,12 @@ public final class BiomeMastery extends JavaPlugin {
 
         // Data setup
         boolean debugMode = getConfig().getBoolean("debug_mode", false);
-        dataManager = new DataManager(getConfig(), messageManager, vaultHook, customLogger, cooldownManager, debugMode);
+        dataManager = new DataManager(getConfig(), messageManager, vaultHook, customLogger, debugMode);
 
         try {
             dataManager.initialise(this);
-        } catch (SQLException | CommunicationException | HikariPool.PoolInitializationException e) {
-            customLogger.logToFile(e, ChatColor.RED + "Database could not connect. Switching to file storage");
-            try {
-                dataManager.initialiseFiles(this);
-            } catch (IOException error) {
-                customLogger.logToFile(e, ChatColor.RED + "There was an error creating the player data folder. Disabling plugin..");
-                Bukkit.getPluginManager().disablePlugin(this);
-                return;
-            }
-
         } catch (IOException e) {
-            customLogger.logToFile(e, ChatColor.RED + "There was an error creating the player data folder. Disabling plugin..");
+            customLogger.logToFile(e, ChatColor.RED + "There was an error creating/retrieving player data. Disabling plugin..");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -87,13 +71,13 @@ public final class BiomeMastery extends JavaPlugin {
         getCommand("biomemastery").setExecutor(new UsageCmd(this));
 
         // Listeners setup
-        playerListener = new PlayerListener(this);
+        PlayerListener playerListener = new PlayerListener(this);
         getServer().getPluginManager().registerEvents(playerListener, this);
 
         // Updater notification setup
         // TODO: Enable later
-//        UpdateChecker updateChecker = new UpdateChecker(this, 125077);
-//        updateChecker.updateAlert(this);
+//        updateChecker = new UpdateChecker(this, 125077);
+//        updateChecker.updateAlert(Bukkit.getConsoleSender());
     }
 
     @Override
@@ -103,26 +87,22 @@ public final class BiomeMastery extends JavaPlugin {
         if (dataManager == null) return;
 
         //Remove all active rewards
+        PlayerDataManager playerDataManager = dataManager.getPlayerDataManager();
         for (Player player : Bukkit.getOnlinePlayers()) {
-            PlayerData playerData = dataManager.getPlayerData(player.getUniqueId());
+            PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
             if (playerData.hasActiveRewards()) {
                 playerData.clearActiveRewards();
             }
         }
 
         //Save player data
-        dataManager.saveAll(false);
+        playerDataManager.saveAll(false);
 
         if (dataManager.getDatabase() != null) dataManager.getDatabase().disconnect();
-
     }
 
     public VaultHook getVaultHook() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) return null;
         else return vaultHook;
-    }
-
-    public boolean isDebugMode() {
-        return getConfig().getBoolean("debug_mode", false);
     }
 }

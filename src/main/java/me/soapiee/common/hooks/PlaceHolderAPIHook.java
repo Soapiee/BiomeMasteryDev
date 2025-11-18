@@ -2,7 +2,7 @@ package me.soapiee.common.hooks;
 
 import lombok.RequiredArgsConstructor;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.soapiee.common.data.DataManager;
+import me.soapiee.common.manager.DataManager;
 import me.soapiee.common.manager.MessageManager;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -34,7 +34,7 @@ public class PlaceHolderAPIHook extends PlaceholderExpansion {
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String identifier) {
         if (offlinePlayer != null && offlinePlayer.isOnline()) {
             Player player = offlinePlayer.getPlayer();
-//            PlayerData playerData = dataManager.getPlayerData(player.getUniqueId());
+//            PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
             if (identifier.equalsIgnoreCase("biomemastery_biome_level")) {
                 return "example1";

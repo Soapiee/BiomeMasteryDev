@@ -14,6 +14,14 @@ public enum Message {
     DATAERRORPLAYER("data_error_player", "&cThere was an error loading/saving your data. Please re-log. "
             + "\nIf this error persists, contact support immediately"),
     INVFULL("player_inventory_full", "&cYour reward dropped on the floor because your inventory is full"),
+    ADMINSETLEVEL("admin_set_level", "&eYour &a%biome% &elevel has been set to level &a%level% &eby an admin"),
+    ADMINADDEDLEVEL("admin_added_level", "&eAn admin added &a%level_formatted% &eto you &a%biome% &elevel"),
+    ADMINREMOVEDLEVEL("admin_removed_level", "&eAn admin removed &c%level_formatted% &efrom your &c%biome% &elevel"),
+    ADMINSETPROGRESS("admin_set_progress", "&eYour &a%biome% &elevel progress has been set to &a%progress% &eby an admin"),
+    ADMINADDEDPROGRESS("admin_added_progress", "&eAn admin added &a%progress% &eto you &a%biome% &elevel"),
+    ADMINREMOVEDPROGRESS("admin_removed_progress", "&eAn admin removed &c%progress% &efrom your &c%biome% &elevel"),
+    ADMINRESETALL("admin_reset_all", "&eAn admin reset all of your data"),
+    ADMINRESETBIOME("admin_reset_biome", "&eAn admin reset your &c%biome% &edata"),
 
 
     //                    --->    PLAYER CMD MESSAGES    <---
@@ -56,6 +64,7 @@ public enum Message {
 
 
     //                    --->    ADMIN CMD MESSAGES    <---
+    UPDATEAVAILABLE("update_available", "&aThere is an update available"),
     ADMINHELP("admin_help", "#01d54a--------- BiomeMastery Admin Help ---------"
             + "\n#01d54aKey: [] = Optional | <> = Required"
             + "\n#01d54a/%cmd_label% reload &7- Reloads the plugin"

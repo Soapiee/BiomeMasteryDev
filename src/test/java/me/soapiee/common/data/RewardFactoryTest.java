@@ -2,14 +2,13 @@ package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
+import me.soapiee.common.logic.rewards.RewardFactory;
 import me.soapiee.common.logic.rewards.types.*;
-import me.soapiee.common.manager.CommandCooldownManager;
 import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Biome;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
@@ -20,41 +19,34 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class DataManagerTest {
+class RewardFactoryTest {
 
     private FileConfiguration mockConfig;
     private MockedStatic<Bukkit> mockedBukkit;
 
-    private DataManager dataManager;
+    private RewardFactory rewardFactory;
 
     @BeforeEach
     void beforeEach() {
         BiomeMastery mockMain = mock(BiomeMastery.class);
-        mockConfig = mock(org.bukkit.configuration.file.FileConfiguration.class);
+        mockConfig = mock(FileConfiguration.class);
         MessageManager mockMessageManager = mock(MessageManager.class);
         VaultHook mockVaultHook = mock(VaultHook.class);
         Logger mockLogger = mock(Logger.class);
-        CommandCooldownManager mockCooldownManager = mock(CommandCooldownManager.class);
-        ConsoleCommandSender mockConsoleSender = mock(ConsoleCommandSender.class);
+        PlayerDataManager mockPlayerDataManager = mock(PlayerDataManager.class);
 
         // mock BiomeMastery behavior
         when(mockMain.getConfig()).thenReturn(mockConfig);
-//        when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
-//        when(mockMain.getVaultHook()).thenReturn(mockVaultHook);
-//        when(mockMain.getCustomLogger()).thenReturn(mockLogger);
-//        when(mockMain.getCooldownManager()).thenReturn(mockCooldownManager);
 
         // mock Bukkit static methods
         mockedBukkit = Mockito.mockStatic(Bukkit.class);
-        mockedBukkit.when(Bukkit::getConsoleSender).thenReturn(mockConsoleSender);
 
-        dataManager = new DataManager(mockConfig, mockMessageManager, mockVaultHook, mockLogger, mockCooldownManager, false);
+        rewardFactory = new RewardFactory(mockConfig, mockLogger, mockVaultHook, mockMessageManager, mockPlayerDataManager);
     }
 
     @AfterEach
@@ -63,91 +55,51 @@ class DataManagerTest {
     }
 
     @Test
-    void testDataManagerInitialization() {
-        assertNotNull(dataManager);
+    void testrewardFactoryInitialization() {
+        assertNotNull(rewardFactory);
     }
 
     @Test
-    void givenValidString_whenCreateBiomeWhitelist_thenReturnTrue() {
-        List<String> inputList = new ArrayList<>();
-        inputList.add("PLAINS");
-
-        List<Biome> actualValue = dataManager.createBiomeWhitelist(Bukkit.getConsoleSender(), inputList);
-
-        assertTrue(actualValue.contains(Biome.PLAINS));
-    }
-
-    @Test
-    void givenInvalidString_whenCreateBiomeWhitelist_thenReturnFalse() {
-        List<String> inputList = new ArrayList<>();
-        inputList.add("plainz");
-
-        List<Biome> actualValue = dataManager.createBiomeWhitelist(Bukkit.getConsoleSender(), inputList);
-
-        assertFalse(actualValue.contains(Biome.PLAINS));
-    }
-
-    @Test
-    void givenValidString_whenCreateBiomeBlacklist_thenReturnFalse() {
-        List<String> inputList = new ArrayList<>();
-        inputList.add("NETHER_WASTES");
-
-        List<Biome> actualValue = dataManager.createBiomeBlacklist(inputList);
-
-        assertFalse(actualValue.contains(Biome.NETHER_WASTES));
-    }
-
-    @Test
-    void givenInvalidString_whenCreateBiomeBlacklist_thenReturnTrue() {
-        List<String> inputList = new ArrayList<>();
-        inputList.add("netherwastes");
-
-        List<Biome> actualValue = dataManager.createBiomeBlacklist(inputList);
-
-        assertTrue(actualValue.contains(Biome.NETHER_WASTES));
-    }
-
-    @Test
-    void givenTypePotion_whenCreateReward_thenReturnPotionReward() {
+    void givenTypePotion_whencreate_thenReturnPotionReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("potion");
         when(mockConfig.getString(path + "reward_item")).thenReturn("jump:1");
         when(mockConfig.getString(path + "type", "temporary")).thenReturn("temporary");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(PotionReward.class, actualValue);
     }
 
     @Test
-    void givenTypeEffect_whenCreateReward_thenReturnEffectReward() {
+    void givenTypeEffect_whencreate_thenReturnEffectReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("effect");
         when(mockConfig.getString(path + "reward_item")).thenReturn("night_vision");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(EffectReward.class, actualValue);
     }
 
     @Test
-    void givenTypeCurrency_whenCreateReward_thenReturnCurrencyReward() {
+    void givenTypeCurrency_whencreate_thenReturnCurrencyReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("Currency");
         when(mockConfig.getString(path + "reward_item")).thenReturn("200");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(CurrencyReward.class, actualValue);
     }
 
     @Test
-    void givenTypeExperience_whenCreateReward_thenReturnExperienceReward() {
+    void givenTypeExperience_whencreate_thenReturnExperienceReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("Experience");
         when(mockConfig.getString(path + "reward_item")).thenReturn("10");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(ExperienceReward.class, actualValue);
     }
@@ -174,7 +126,7 @@ class DataManagerTest {
     }
 
     @Test
-    void givenTypeItem_whenCreateReward_thenReturnItemReward() {
+    void givenTypeItem_whencreate_thenReturnItemReward() {
         when(Bukkit.getItemFactory()).thenReturn(mock(ItemFactory.class));
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(true);
@@ -182,7 +134,7 @@ class DataManagerTest {
         when(mockConfig.getString(path + "reward_type")).thenReturn("item");
         when(mockConfig.getString(path + "reward_item")).thenReturn("apple:10");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(ItemReward.class, actualValue);
         assertSame(Material.APPLE, ((ItemReward) actualValue).getReward(0).getType());
@@ -190,7 +142,7 @@ class DataManagerTest {
     }
 
     @Test
-    void givenTypePermission_whenCreateReward_thenReturnPermissionReward() {
+    void givenTypePermission_whencreate_thenReturnPermissionReward() {
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(false);
         when(mockConfig.isList(path + "reward_item")).thenReturn(true);
@@ -201,31 +153,31 @@ class DataManagerTest {
         list.add("permission3");
         when(mockConfig.getStringList(path + "reward_item")).thenReturn(list);
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(PermissionReward.class, actualValue);
     }
 
     @Test
-    void givenTypeCommand_whenCreateReward_thenReturnCommandReward() {
+    void givenTypeCommand_whencreate_thenReturnCommandReward() {
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(true);
         when(mockConfig.isList(path + "reward_item")).thenReturn(false);
         when(mockConfig.getString(path + "reward_type")).thenReturn("command");
         when(mockConfig.getString(path + "reward_item")).thenReturn("give %player% 50");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(CommandReward.class, actualValue);
     }
 
     @Test
-    void givenInvalidType_whenCreateReward_thenReturnNullReward() {
+    void givenInvalidType_whencreate_thenReturnNullReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("currency");
         when(mockConfig.getString(path + "reward_item")).thenReturn("abc");
 
-        Reward actualValue = dataManager.createReward(Bukkit.getConsoleSender(), path);
+        Reward actualValue = rewardFactory.create(path);
 
         assertInstanceOf(NullReward.class, actualValue);
     }

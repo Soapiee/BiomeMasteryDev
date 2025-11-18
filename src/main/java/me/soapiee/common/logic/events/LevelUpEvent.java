@@ -20,17 +20,17 @@ public final class LevelUpEvent extends Event implements Cancellable {
         this.offlinePlayer = player;
         this.newLevel = newLevel;
         this.biomeLevel = biomeLevel;
-        this.cancelled = false;
+        cancelled = false;
     }
 
     @Override
     public boolean isCancelled() {
-        return this.cancelled;
+        return cancelled;
     }
 
     @Override
     public void setCancelled(boolean cancel) {
-        this.cancelled = true;
+        cancelled = true;
     }
 
     @Override

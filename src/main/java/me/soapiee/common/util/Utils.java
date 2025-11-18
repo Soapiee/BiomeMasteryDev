@@ -19,7 +19,7 @@ public class Utils {
     }
 
     public static void debugMsg(String playerName, String message) {
-        consoleMsg(org.bukkit.ChatColor.YELLOW + "[DEBUG] " + (playerName.isEmpty() ? "" : "@" + playerName ) + " " + message);
+        consoleMsg(org.bukkit.ChatColor.YELLOW + "[DEBUG] " + (playerName.isEmpty() ? "" : "@" + playerName + " " ) + message);
     }
 
     public static String capitalise(String string){

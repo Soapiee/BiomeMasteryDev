@@ -1,7 +1,6 @@
 package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.DataManager;
 import me.soapiee.common.logic.rewards.PendingReward;
 import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.util.Logger;
@@ -21,7 +20,7 @@ import java.util.UUID;
 public class PendingRewardsManager {
 
     private final Logger customLogger;
-    private final DataManager dataManager;
+    private final BiomeDataManager biomeDataManager;
     private final MessageManager messageManager;
 
     private final File file;
@@ -29,14 +28,14 @@ public class PendingRewardsManager {
     private final HashMap<UUID, ArrayList<PendingReward>> pendingRewards;
 
     public PendingRewardsManager(BiomeMastery main) {
-        this.customLogger = main.getCustomLogger();
-        this.dataManager = main.getDataManager();
-        this.messageManager = main.getMessageManager();
-        this.file = new File(main.getDataFolder() + File.separator + "Data", "pendingrewards.yml");
-        this.contents = new YamlConfiguration();
+        customLogger = main.getCustomLogger();
+        biomeDataManager = main.getDataManager().getBiomeDataManager();
+        messageManager = main.getMessageManager();
+        file = new File(main.getDataFolder() + File.separator + "Data", "pendingrewards.yml");
+        contents = new YamlConfiguration();
         pendingRewards = new HashMap<>();
 
-        this.load();
+        load();
     }
 
     private void load() {
@@ -74,7 +73,7 @@ public class PendingRewardsManager {
                 int i = 1;
                 for (PendingReward reward : get(uuid)) {
                     int level = reward.getLevel();
-                    String biome = reward.getBiome();
+                    String biome = reward.getBiome().replace(" ", "_");
 
                     contents.set(uuid + "." + i + ".Level", level);
                     contents.set(uuid + "." + i + ".Biome", biome.toLowerCase());
@@ -132,7 +131,7 @@ public class PendingRewardsManager {
             int level = contents.getInt(uuid + "." + key + ".Level");
             String biome = contents.getString(uuid + "." + key + ".Biome");
 
-            Reward reward = dataManager.getBiomeData(biome).getReward(level);
+            Reward reward = biomeDataManager.getBiomeData(biome).getReward(level);
             rewardsList.add(new PendingReward(level, biome, reward));
         }
 

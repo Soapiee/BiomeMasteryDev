@@ -9,8 +9,8 @@ player_help:
   - "#01d54a--------- BiomeMastery Help ---------"
   - "#01d54aKey: [ ] = Optional | <> = Required"
   - "#01d54a/%cmd_label% info [player] &7- Reloads the plugin"
-  - "#01d54a/%cmd_label% <biome> [player] &7- description"
-  - "#01d54a/%cmd_label% <biome> claim <level> &7- description"
+  - "#01d54a/%cmd_label% info <biome> [player] &7- Shows more in-depth details about a particular biome"
+  - "#01d54a/%cmd_label% reward <biome> <level> &7- Toggles a reward (Used for the multi-use rewards)"
 admin_help:
   - "#01d54a--------- BiomeMastery Admin Help ---------"
   - "#01d54aKey: [] = Optional | <> = Required"

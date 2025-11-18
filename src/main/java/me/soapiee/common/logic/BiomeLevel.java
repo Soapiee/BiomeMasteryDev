@@ -2,7 +2,6 @@ package me.soapiee.common.logic;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.soapiee.common.data.BiomeData;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.util.Utils;
@@ -19,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 public class BiomeLevel {
 
     private final OfflinePlayer player;
+    private final Object lock = new Object();
 
     private final BiomeData biomeData;
     @Getter private int level;
@@ -42,23 +42,25 @@ public class BiomeLevel {
         entryTime = null;
     }
 
-    public void updateProgress() {
-        if (isMaxLevel()) return;
+    public synchronized void updateProgress() {
+        synchronized (lock) {
+            if (isMaxLevel()) return;
 
-        Player onlineTarget = player.getPlayer();
-        if (onlineTarget == null) return;
+            Player onlineTarget = player.getPlayer();
+            if (onlineTarget == null) return;
 
-        if (getEntryTime() == null) return;
-        Biome playerBiome = onlineTarget.getLocation().getBlock().getBiome();
-        if (!playerBiome.name().equalsIgnoreCase(getBiome())) return;
+            if (getEntryTime() == null) return;
+            Biome playerBiome = onlineTarget.getLocation().getBlock().getBiome();
+            if (!playerBiome.name().equalsIgnoreCase(getBiome())) return;
 
-        long toAdd = ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
-        entryTime = LocalDateTime.now();
-        Utils.debugMsg(player.getName(),
-                ChatColor.GREEN.toString() + toAdd + " seconds added to biome " + biomeData.getBiome().name());
+            long toAdd = ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
+            entryTime = LocalDateTime.now();
+            Utils.debugMsg(player.getName(),
+                    ChatColor.GREEN.toString() + toAdd + " seconds added to biome " + biomeData.getBiome().name());
 
-        progress += toAdd;
-        checkLevelUp();
+            progress += toAdd;
+            checkLevelUp();
+        }
     }
 
     private int checkLevelUp() {
@@ -88,22 +90,27 @@ public class BiomeLevel {
         int maxLevel = biomeData.getMaxLevel();
         if (newLevel > maxLevel) return -1;
         if (newLevel < 0) return -1;
+        if (newLevel == level) return -1;
 
-        level = newLevel;
-        progress = 0;
-        if (entryTime != null) entryTime = LocalDateTime.now();
+        synchronized (lock) {
+            level = newLevel;
+            progress = 0;
+            if (entryTime != null) entryTime = LocalDateTime.now();
 
-        return level;
+            return level;
+        }
     }
 
     public long setProgress(long newProgress) {
-        if (newProgress < 0) return -1;
+        synchronized (lock) {
+            if (newProgress < 0) return -1;
 
-        if (entryTime != null) entryTime = LocalDateTime.now();
+            if (entryTime != null) entryTime = LocalDateTime.now();
 
-        progress = newProgress;
-        if (checkLevelUp() == 2) return -2;
-        return progress;
+            progress = newProgress;
+            if (checkLevelUp() == 2) return -2;
+            return progress;
+        }
     }
 
     public void reset() {

@@ -1,23 +1,30 @@
-package me.soapiee.common.util;
+package me.soapiee.common.manager;
 
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
+import me.soapiee.common.util.Message;
+import me.soapiee.common.util.Utils;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class UpdateChecker {
+public class UpdateManager {
 
     private URL resourceURL;
     @Getter private UpdateCheckResult updateCheckResult;
+    private final ConfigManager configManager;
+    private final MessageManager messageManager;
 
-    public UpdateChecker(BiomeMastery main, int resourceId) {
+    public UpdateManager(BiomeMastery main, int resourceId) {
+        configManager = main.getDataManager().getConfigManager();
+        messageManager = main.getMessageManager();
+
         try {
-            this.resourceURL = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId);
+            resourceURL = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + resourceId);
         } catch (Exception exception) {
             return;
         }
@@ -38,18 +45,16 @@ public class UpdateChecker {
         else updateCheckResult = UpdateCheckResult.NO_RESULT;
     }
 
-    public void updateAlert(BiomeMastery main) {
-        FileConfiguration config = main.getConfig();
-
-        if (!config.isSet("update_notification")) {
-            config.set("update_notification", true);
-            main.saveConfig();
-        }
-
+    public void updateAlert(CommandSender sender) {
         if (getUpdateCheckResult() != UpdateCheckResult.OUT_DATED) return;
 
-        if (config.getBoolean("update_notification"))
-            Utils.consoleMsg(ChatColor.GREEN + "There is an update available");
+        if (configManager.isUpdateNotif()) {
+            String message = messageManager.get(Message.UPDATEAVAILABLE);
+            if (message == null) return;
+
+            if (sender instanceof ConsoleCommandSender) Utils.consoleMsg(message);
+            else sender.sendMessage(message);
+        }
     }
 
     public String getLatestVersion() {

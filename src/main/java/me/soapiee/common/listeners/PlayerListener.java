@@ -1,18 +1,18 @@
 package me.soapiee.common.listeners;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.data.DataManager;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeLevel;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import me.soapiee.common.logic.rewards.PendingReward;
-import me.soapiee.common.logic.rewards.types.EffectReward;
-import me.soapiee.common.logic.rewards.types.PotionReward;
 import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.manager.ConfigManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.manager.PendingRewardsManager;
+import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
+import me.soapiee.common.util.PlayerCache;
 import me.soapiee.common.util.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -35,7 +35,9 @@ import java.util.UUID;
 public class PlayerListener implements Listener {
 
     private final BiomeMastery main;
-    private final DataManager dataManager;
+    private final PlayerCache playerCache;
+    private final PlayerDataManager playerDataManager;
+    private final ConfigManager configManager;
     private final MessageManager messageManager;
     private final PendingRewardsManager pendingRewardsManager;
     private final Logger logger;
@@ -44,7 +46,9 @@ public class PlayerListener implements Listener {
 
     public PlayerListener(BiomeMastery main) {
         this.main = main;
-        dataManager = main.getDataManager();
+        playerCache = main.getPlayerCache();
+        playerDataManager = main.getDataManager().getPlayerDataManager();
+        configManager = main.getDataManager().getConfigManager();
         messageManager = main.getMessageManager();
         pendingRewardsManager = main.getPendingRewardsManager();
         logger = main.getCustomLogger();
@@ -57,25 +61,34 @@ public class PlayerListener implements Listener {
         UUID uuid = player.getUniqueId();
         Biome playerBiome = player.getLocation().getBlock().getBiome();
 
+        if (!player.hasPlayedBefore()) playerCache.addOfflinePlayer(player);
+
+        //TODO:
+        // if (player.hasPermission("biomemastery.admin")) updateNotif(player);
+
         PlayerData playerData;
-        if (!dataManager.has(player.getUniqueId())) {
+        if (!playerDataManager.has(player.getUniqueId())) {
             try {
                 playerData = new PlayerData(main, player);
-                dataManager.add(playerData);
+                playerDataManager.add(playerData);
             } catch (IOException | SQLException error) {
                 logger.logToPlayer(player, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
                 return;
             }
-        } else playerData = dataManager.getPlayerData(player.getUniqueId());
+        } else playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
         checkPendingRewards(player);
         playerBiomeMap.put(uuid, playerBiome);
 
         World playerWorld = player.getWorld();
-        if (!dataManager.isEnabledWorld(playerWorld)) return;
-        if (!dataManager.isEnabledBiome(playerBiome)) return;
+        if (!configManager.isEnabledWorld(playerWorld)) return;
+        if (!configManager.isEnabledBiome(playerBiome)) return;
 
         setBiomeStart(playerData, playerBiome);
+    }
+
+    private void updateNotif(Player player){
+//        if (configManager.isUpdateNotif()) main.getUpdateChecker().updateAlert(player);
     }
 
     private void checkPendingRewards(Player player) {
@@ -100,9 +113,9 @@ public class PlayerListener implements Listener {
         }
 
         //Player has changed biome or world
-        PlayerData playerData = dataManager.getPlayerData(uuid);
+        PlayerData playerData = playerDataManager.getPlayerData(uuid);
         String playerName = player.getName();
-        if (main.isDebugMode())
+        if (configManager.isDebugMode())
             Utils.debugMsg(playerName, ChatColor.BLUE + "Changed biome: " + previousBiome.name() + " -> " + newBiome.name());
 
         if (playerData.hasActiveRewards()) {
@@ -110,14 +123,14 @@ public class PlayerListener implements Listener {
             player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDSDEACTIVATED, previousBiome.name())));
         }
 
-        if (dataManager.isEnabledWorld(previousWorld) && (dataManager.isEnabledBiome(previousBiome))) {
-            if (main.isDebugMode())
+        if (configManager.isEnabledWorld(previousWorld) && (configManager.isEnabledBiome(previousBiome))) {
+            if (configManager.isDebugMode())
                 Utils.debugMsg(playerName, ChatColor.BLUE + "Previous biome (" + previousBiome.name() + ") is enabled, progress saved");
             setBiomeProgress(playerData, previousBiome);
         }
 
-        if (dataManager.isEnabledWorld(newWorld) && (dataManager.isEnabledBiome(newBiome))) {
-            if (main.isDebugMode())
+        if (configManager.isEnabledWorld(newWorld) && (configManager.isEnabledBiome(newBiome))) {
+            if (configManager.isDebugMode())
                 Utils.debugMsg(playerName, ChatColor.BLUE + "New biome (" + newBiome.name() + ") is enabled, progress started");
             setBiomeStart(playerData, newBiome);
         }
@@ -145,7 +158,7 @@ public class PlayerListener implements Listener {
         UUID uuid = player.getUniqueId();
         World currentWorld = player.getWorld();
         Biome currentBiome = player.getLocation().getBlock().getBiome();
-        PlayerData playerData = dataManager.getPlayerData(uuid);
+        PlayerData playerData = playerDataManager.getPlayerData(uuid);
 
         if (playerData == null) {
             logger.logToFile(new NullPointerException(), "Could not find " + player.getName() + " players data");
@@ -154,13 +167,12 @@ public class PlayerListener implements Listener {
 
         if (playerData.hasActiveRewards()) playerData.clearActiveRewards();
 
-        if (dataManager.isEnabledWorld(currentWorld)) {
-            if (dataManager.isEnabledBiome(currentBiome)) setBiomeProgress(playerData, currentBiome);
-        }
+        if (configManager.isEnabledWorld(currentWorld))
+            if (configManager.isEnabledBiome(currentBiome)) setBiomeProgress(playerData, currentBiome);
 
         playerData.saveData(true);
 
-        dataManager.remove(uuid);
+        playerDataManager.remove(uuid);
         playerBiomeMap.remove(uuid);
     }
 
@@ -169,16 +181,13 @@ public class PlayerListener implements Listener {
         OfflinePlayer offlinePlayer = event.getOfflinePlayer();
         BiomeLevel biomeLevel = event.getBiomeLevel();
         Reward reward = biomeLevel.getReward(event.getNewLevel());
-        PlayerData playerData = dataManager.getPlayerData(offlinePlayer.getUniqueId());
 
         if (!offlinePlayer.isOnline()) {
             if (!reward.isTemporary()) return;
-            if (main.isDebugMode()) Utils.debugMsg(offlinePlayer.getName(), "&eAdded Pending Reward");
+            if (configManager.isDebugMode()) Utils.debugMsg(offlinePlayer.getName(), "&eAdded Pending Reward");
             pendingRewardsManager.add(offlinePlayer.getUniqueId(), new PendingReward(event.getNewLevel(), biomeLevel.getBiome(), reward));
             return;
         }
-
-        if (reward instanceof PotionReward || reward instanceof EffectReward) playerData.addActiveReward(reward);
 
         Player player = offlinePlayer.getPlayer();
         player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.LEVELLEDUP, event.getNewLevel(), biomeLevel.getBiome())));

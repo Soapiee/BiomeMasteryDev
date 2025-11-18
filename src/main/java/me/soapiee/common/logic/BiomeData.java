@@ -1,9 +1,10 @@
-package me.soapiee.common.data;
+package me.soapiee.common.logic;
 
 import lombok.Getter;
+import me.soapiee.common.logic.rewards.RewardFactory;
 import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.manager.ConfigManager;
 import org.bukkit.block.Biome;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.HashMap;
@@ -14,18 +15,18 @@ public class BiomeData {
     private final HashMap<Integer, Integer> levels;
     private final HashMap<Integer, Reward> rewards;
 
-    public BiomeData(DataManager dataManager,
+    public BiomeData(ConfigManager configManager,
+                     RewardFactory rewardFactory,
                      FileConfiguration config,
                      Biome biome,
-                     boolean isDefault,
-                     CommandSender sender) {
+                     boolean isDefault) {
         this.biome = biome;
         levels = new HashMap<>();
         rewards = new HashMap<>();
 
         if (isDefault) {
-            levels.putAll(dataManager.getDefaultLevels());
-            rewards.putAll(dataManager.getDefaultRewards());
+            levels.putAll(configManager.getDefaultLevelsThresholds());
+            rewards.putAll(configManager.getDefaultRewards());
 
         } else {
             String biomeName = biome.name();
@@ -33,7 +34,7 @@ public class BiomeData {
             for (String key : config.getConfigurationSection("biomes." + biomeName).getKeys(false)) {
                 int level = Integer.parseInt(key);
                 levels.put(level, config.getInt("biomes." + biomeName + "." + level + ".target_duration"));
-                rewards.put(level, dataManager.createReward(sender, "biomes." + biomeName + "." + level + "."));
+                rewards.put(level, rewardFactory.create("biomes." + biomeName + "." + level + "."));
             }
         }
     }

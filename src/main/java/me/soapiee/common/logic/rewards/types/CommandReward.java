@@ -36,7 +36,7 @@ public class CommandReward extends Reward {
 //
 //        return builder.toString();
 
-        //TODO Add reward decription section to config
+        //TODO Add reward description section to config
         return "Custom commands";
     }
 }

@@ -25,13 +25,13 @@ public class CommandCooldownManager {
     private int threshold;
 
     public CommandCooldownManager(BiomeMastery main, int threshold) {
-        this.customLogger = main.getCustomLogger();
-        this.file = new File(main.getDataFolder() + File.separator + "Data", "cooldowns.yml");
-        this.contents = new YamlConfiguration();
-        this.cooldowns = new HashMap<>();
+        customLogger = main.getCustomLogger();
+        file = new File(main.getDataFolder() + File.separator + "Data", "cooldowns.yml");
+        contents = new YamlConfiguration();
+        cooldowns = new HashMap<>();
         this.threshold = Math.max(threshold, 1);
 
-        this.load();
+        load();
     }
 
     private void load() {

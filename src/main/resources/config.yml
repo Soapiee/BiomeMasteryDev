@@ -1,4 +1,4 @@
-# Datastorage Settings
+# Data Storage Settings
 database:
   enabled: false # If false, data is stored as files
   host: "localhost"
@@ -18,6 +18,10 @@ settings:
   # Must be 1 second or higher
   # Default: 3
   command_cooldown: 3
+
+  # Do you want there to be a notification given in console when there is an update available
+  # Default: true
+  plugin_update_notification: true
 
 default_biome_settings:
   # List the worlds you want this plugin to work on
@@ -56,7 +60,7 @@ default_biome_settings:
 biomes:
   # Permanent rewards are rewards that a player can activate/deactivate whenever they want whilst in the specific biome.
   # For example, if a player is at level 2 for the plains biome (see below),
-  # they will get night vision every single time they're in that biome in the future
+  # they will be able to activate night vision every single time they're in that biome in the future
   #
   # Temporary rewards are rewards that are received only once.
   #

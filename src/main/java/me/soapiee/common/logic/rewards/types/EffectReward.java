@@ -1,6 +1,6 @@
 package me.soapiee.common.logic.rewards.types;
 
-import me.soapiee.common.logic.rewards.EffectType;
+import me.soapiee.common.logic.effects.EffectType;
 import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.util.Utils;
 import org.bukkit.entity.Player;
@@ -16,15 +16,17 @@ public class EffectReward extends Reward {
 
     @Override
     public void give(Player player) {
-        //TODO
+        //TODO Give effect
 
         //TODO Add persistent data key
+//        playerDataManager.getPlayerData(player.getUniqueId()).addActiveReward(this);
     }
 
     public void remove(Player player){
-        //TODO
+        //TODO Remove effect
 
         //TODO Remove persistent data key
+//        playerDataManager.getPlayerData(player.getUniqueId()).clearActiveReward(this);
     }
 
     public EffectType getReward() {

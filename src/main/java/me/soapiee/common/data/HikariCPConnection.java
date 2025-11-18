@@ -22,7 +22,7 @@ public class HikariCPConnection {
     private final String HOST, DATABASE, USERNAME, PASSWORD;
     private final int PORT;
 
-    @Getter private HikariDataSource connection;
+    @Getter private HikariDataSource database;
 
     public HikariCPConnection(FileConfiguration config) {
         HOST = config.getString("database.host");
@@ -47,7 +47,7 @@ public class HikariCPConnection {
 
     public void connect(HashSet<Biome> biomes) throws IOException, SQLException, HikariPool.PoolInitializationException {
         HikariConfig config = getHikariConfig();
-        connection = new HikariDataSource(config);
+        database = new HikariDataSource(config);
 
         String setup;
         try (InputStream in = getClass().getClassLoader().getResourceAsStream("dbsetup.sql")) {
@@ -59,7 +59,7 @@ public class HikariCPConnection {
 
                 String query = setup.replace("TABLENAME", biome.name());
 
-                try (Connection connection = this.connection.getConnection();
+                try (Connection connection = database.getConnection();
                      PreparedStatement statement = connection.prepareStatement(query)) {
                     statement.execute();
                 }
@@ -68,12 +68,12 @@ public class HikariCPConnection {
     }
 
     public boolean isConnected() {
-        return connection != null;
+        return database != null;
     }
 
     public void disconnect() {
         if (isConnected()) {
-            connection.close();
+            database.close();
         }
     }
 
