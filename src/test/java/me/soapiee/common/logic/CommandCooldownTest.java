@@ -2,7 +2,9 @@ package me.soapiee.common.logic;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.manager.CommandCooldownManager;
+import me.soapiee.common.manager.DataManager;
 import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import org.bukkit.command.ConsoleCommandSender;
 import org.junit.jupiter.api.AfterEach;
@@ -25,10 +27,13 @@ class CommandCooldownTest {
         mockConsole = mock(ConsoleCommandSender.class);
         MessageManager mockMessageManager = mock(MessageManager.class);
         Logger mockLogger = mock(Logger.class);
+        DataManager mockDataManager = mock(DataManager.class);
+        PlayerDataManager mockPlayerDataManager = mock(PlayerDataManager.class);
 
         when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
         when(mockMain.getCustomLogger()).thenReturn(mockLogger);
-        when(mockMain.getCooldownManager()).thenReturn(mockCooldownManager);
+        when(mockMain.getDataManager()).thenReturn(mockDataManager);
+        when(mockDataManager.getPlayerDataManager()).thenReturn(mockPlayerDataManager);
 
         mockCooldownManager = new CommandCooldownManager(mockMain, 5);
     }

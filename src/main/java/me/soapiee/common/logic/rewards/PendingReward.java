@@ -1,7 +1,6 @@
 package me.soapiee.common.logic.rewards;
 
 import lombok.Getter;
-import me.soapiee.common.logic.rewards.types.Reward;
 
 public class PendingReward {
 

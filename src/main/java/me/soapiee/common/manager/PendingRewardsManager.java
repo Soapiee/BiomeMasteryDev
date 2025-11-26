@@ -2,7 +2,7 @@ package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.rewards.PendingReward;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
@@ -27,9 +27,9 @@ public class PendingRewardsManager {
     private YamlConfiguration contents;
     private final HashMap<UUID, ArrayList<PendingReward>> pendingRewards;
 
-    public PendingRewardsManager(BiomeMastery main) {
+    public PendingRewardsManager(BiomeMastery main, BiomeDataManager biomeDataManager) {
         customLogger = main.getCustomLogger();
-        biomeDataManager = main.getDataManager().getBiomeDataManager();
+        this.biomeDataManager = biomeDataManager;
         messageManager = main.getMessageManager();
         file = new File(main.getDataFolder() + File.separator + "Data", "pendingrewards.yml");
         contents = new YamlConfiguration();
@@ -52,7 +52,7 @@ public class PendingRewardsManager {
         try {
             contents.load(file);
 
-            for (String key : contents.getKeys(true)) {
+            for (String key : contents.getKeys(false)) {
                 UUID uuid = UUID.fromString(key);
                 if (!Bukkit.getOfflinePlayer(uuid).hasPlayedBefore()) continue;
 

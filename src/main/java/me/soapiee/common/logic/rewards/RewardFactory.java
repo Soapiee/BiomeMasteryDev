@@ -1,8 +1,10 @@
 package me.soapiee.common.logic.rewards;
 
+import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.effects.EffectType;
 import me.soapiee.common.logic.rewards.types.*;
+import me.soapiee.common.manager.EffectsManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
@@ -15,22 +17,22 @@ import java.util.ArrayList;
 
 public class RewardFactory {
 
+    private final BiomeMastery main;
     private final FileConfiguration config;
     private final Logger customLogger;
     private final VaultHook vaultHook;
     private final MessageManager messageManager;
     private final PlayerDataManager playerDataManager;
+    private final EffectsManager effectsManager;
 
-    public RewardFactory(FileConfiguration config,
-                         Logger logger,
-                         VaultHook vaultHook,
-                         MessageManager messageManager,
-                         PlayerDataManager playerDataManager) {
-        this.config = config;
-        this.customLogger = logger;
-        this.vaultHook = vaultHook;
-        this.messageManager = messageManager;
+    public RewardFactory(BiomeMastery main, PlayerDataManager playerDataManager, EffectsManager effectsManager) {
+        this.main = main;
+        this.config = main.getConfig();
+        this.customLogger = main.getCustomLogger();
+        this.vaultHook = main.getVaultHook();
+        this.messageManager = main.getMessageManager();
         this.playerDataManager = playerDataManager;
+        this.effectsManager = effectsManager;
     }
 
     public Reward create(String path) {
@@ -88,7 +90,7 @@ public class RewardFactory {
 
         String temp = config.getString(path + "type", "temporary");
 
-        return new PotionReward(potionType, amplifier, (temp.equalsIgnoreCase("temporary")), playerDataManager);
+        return new PotionReward(main, playerDataManager, potionType, amplifier, (temp.equalsIgnoreCase("temporary")));
     }
 
     private Reward effectReward(String path) {
@@ -101,9 +103,9 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        boolean isTemp = config.getBoolean(path + "type", true);
+        String temp = config.getString(path + "type", "temporary");
 
-        return new EffectReward(effectType, isTemp);
+        return new EffectReward(main, playerDataManager, effectsManager, effectType, (temp.equalsIgnoreCase("temporary")));
     }
 
     private Reward currencyReward(String path) {
@@ -127,7 +129,7 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        return new CurrencyReward(vaultHook, money);
+        return new CurrencyReward(main, money);
     }
 
     private Reward experienceReward(String path) {
@@ -146,7 +148,7 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        return new ExperienceReward(experience);
+        return new ExperienceReward(main, experience);
     }
 
     private Reward itemReward(String path) {
@@ -211,7 +213,7 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        return new PermissionReward(vaultHook, permissionList);
+        return new PermissionReward(main, permissionList);
     }
 
     private Reward commandReward(String path) {
@@ -228,7 +230,7 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        return new CommandReward(commandList);
+        return new CommandReward(main, commandList);
     }
 
     private void createLog(String path, Exception error, String invalidObject) {

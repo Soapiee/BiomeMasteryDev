@@ -1,7 +1,11 @@
 package me.soapiee.common.logic.rewards.types;
 
+import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.hooks.VaultHook;
+import me.soapiee.common.util.Message;
+import me.soapiee.common.util.Utils;
 import org.bukkit.entity.Player;
 
 public class CurrencyReward extends Reward {
@@ -9,15 +13,16 @@ public class CurrencyReward extends Reward {
     private final VaultHook vaultHook;
     private final double amount;
 
-    public CurrencyReward(VaultHook vaultHook, double amount) {
-        super(RewardType.CURRENCY, true);
-        this.vaultHook = vaultHook;
+    public CurrencyReward(BiomeMastery main, double amount) {
+        super(RewardType.CURRENCY, true, main.getMessageManager());
+        this.vaultHook = main.getVaultHook();
         this.amount = amount;
     }
 
     @Override
     public void give(Player player) {
         vaultHook.deposit(player, amount);
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     @Override

@@ -5,7 +5,7 @@ import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeLevel;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.ConfigManager;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Biome;

@@ -53,6 +53,26 @@ default_biome_settings:
       reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
       reward_item: jump:2 #potion effect:amplifier:duration
 
+# If you would like to group biomes together, create a name for that group here.
+# Under the group name, list all the biomes that belong to that group
+
+# The biome that you list first will be the parent biome.
+# Parent biome: That will be the one that holds all the data. So if you want to define rewards for the group
+# list them under the parent biome
+groups:
+  ocean_group:
+    - OCEAN
+    - DEEP_OCEAN
+    - FROZEN_OCEAN
+    - DEEP_FROZEN_OCEAN
+    - COLD_OCEAN
+    - DEEP_COLD_OCEAN
+    - LUKEWARM_OCEAN
+    - DEEP_LUKEWARM_OCEAN
+    - WARM_OCEAN
+  random_group:
+    - FOREST
+    - GROVE
 
 # Anything set in here will override the default settings
 # Use this if you want specific perks for a certain biome
@@ -66,6 +86,25 @@ biomes:
   #
   # Regardless if the reward is temporary or permanent, if it's a potion or effect reward type, it will
   # be removed once the player leaves that biome
+
+  FOREST:
+    # Note the "forest" biome is inside a group above.
+    # Players inside the Grove biome will win these rewards when the threshold is reached.
+    # "random_group" will be the name of the biome level that players can see in /biome info
+    '1':
+      type: permanent # Valid types: temporary or permanent (Only needed for potion + effect reward types)
+      target_duration: 60 # seconds
+      reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
+      reward_item: jump:2 #potion effect:amplifier:duration
+    '2':
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
+      target_duration: 60 # seconds
+      reward_type: effect # Valid types: potion, effect, item, permission, command, experience, currency
+      reward_item: night_vision # Valid effects: water_walker, night_vision
+    '3':
+      target_duration: 60 # seconds
+      reward_type: item
+      reward_item: apple:5 # material:quantity
 
   PLAINS:
     '1':

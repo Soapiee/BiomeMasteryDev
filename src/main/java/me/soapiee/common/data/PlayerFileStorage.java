@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class PlayerFileStorage implements PlayerStorageHandler{
+public class PlayerFileStorage implements PlayerStorageHandler {
 
     private final BiomeMastery main;
     private final ConfigManager configManager;
@@ -41,6 +41,14 @@ public class PlayerFileStorage implements PlayerStorageHandler{
 
         UUID uuid = playerData.getPlayer().getUniqueId();
         file = new File(main.getDataFolder() + File.separator + "Data" + File.separator + "BiomeLevels", uuid + ".yml");
+
+        createPlayerLevels();
+    }
+
+    private void createPlayerLevels() {
+        for (Biome key : configManager.getEnabledBiomes()) {
+            playerData.getBiomesMap().put(key, new BiomeLevel(player, biomeDataManager.getBiomeData(key)));
+        }
     }
 
     @Override
@@ -51,11 +59,9 @@ public class PlayerFileStorage implements PlayerStorageHandler{
         }
 
         contents = YamlConfiguration.loadConfiguration(file);
-//        YamlConfiguration localCopy = YamlConfiguration.loadConfiguration(file);
 
         synchronized (fileLock) {
             boolean updated = false;
-//            contents = localCopy;
 
             for (Biome biome : configManager.getEnabledBiomes()) {
                 String biomeName = biome.name();
@@ -64,15 +70,8 @@ public class PlayerFileStorage implements PlayerStorageHandler{
                     contents.set(biomeName + ".Level", 0);
                     contents.set(biomeName + ".Progress", 0);
                     updated = true;
-
-                    BiomeLevel biomeLevel = new BiomeLevel(player, biomeDataManager.getBiomeData(biome));
-                    playerData.getBiomesMap().put(biome, biomeLevel);
-
-                    if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
-                            ChatColor.GREEN + biomeName + " data set (0:0)");
-
                 } else {
-                    playerData.getBiomesMap().put(biome, readBiomeLevelData(biome));
+                    setBiomeLevelData(biome);
                 }
             }
 
@@ -98,16 +97,16 @@ public class PlayerFileStorage implements PlayerStorageHandler{
         else saveRunnable(player.getName());
     }
 
-    private BiomeLevel readBiomeLevelData(Biome biome) {
+    private void setBiomeLevelData(Biome biome) {
         String biomeName = biome.name();
 
         int level = contents.getInt(biomeName + ".Level", 0);
         int progress = contents.getInt(biomeName + ".Progress", 0);
+        playerData.getBiomesMap().get(biome).setLevel(level);
+        playerData.getBiomesMap().get(biome).setProgress(progress);
 
         if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
                 ChatColor.GREEN + biomeName + " data set (" + level + ":" + progress + ")");
-
-        return new BiomeLevel(player, biomeDataManager.getBiomeData(biome), level, progress);
     }
 
     private void createFile() {
@@ -164,4 +163,62 @@ public class PlayerFileStorage implements PlayerStorageHandler{
             customLogger.logToFile(e, main.getMessageManager().getWithPlaceholder(Message.DATAERROR, playerName));
         }
     }
+
+    //    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+//    @Override
+//    public void readData() {
+//        if (!file.exists()) {
+//            createFile();
+//            return;
+//        }
+//
+//        contents = YamlConfiguration.loadConfiguration(file);
+//
+//        synchronized (fileLock) {
+//            boolean updated = false;
+//
+//            for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
+//                String biomeName = biomeData.getBiomeName();
+//                Biome biome = biomeData.getBiome();
+//
+//                if (!contents.isSet(biomeName + ".Level") || !contents.isSet(biomeName + ".Progress")) {
+//                    contents.set(biomeName + ".Level", 0);
+//                    contents.set(biomeName + ".Progress", 0);
+//                    updated = true;
+//
+//                } else {
+//                    setBiomeLevelData(biome);
+//                }
+//            }
+//
+//            if (updated) {
+//                try {
+//                    contents.save(file);
+//                } catch (IOException e) {
+//                    customLogger.logToFile(e, "Failed to update missing biome data for " + player.getName());
+//                }
+//            }
+//        }
+//    }
+
+//    private void createPlayerLevels(){
+//        if (configManager.isBiomesGrouped()){
+//            for (Biome parentBiome : configManager.getGroupBiomes().keySet()) {
+//                playerData.getBiomesMap().put(parentBiome, new BiomeLevel(player, biomeDataManager.getBiomeData(parentBiome)));
+//            }
+//        }
+//
+//        for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
+//            BiomeLevel level;
+//
+//            if (biomeData.isChild()){
+//                Biome parentBiome = biomeData.getParent();
+//                level = playerData.getBiomesMap().get(parentBiome);
+//            } else {
+//                level = new BiomeLevel(player, biomeData);
+//            }
+//
+//            playerData.getBiomesMap().put(biomeData.getBiome(), level);
+//        }
+//    }
 }

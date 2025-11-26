@@ -6,7 +6,9 @@ import me.soapiee.common.commands.UsageCmd;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.hooks.PlaceHolderAPIHook;
 import me.soapiee.common.hooks.VaultHook;
+import me.soapiee.common.listeners.EffectsListener;
 import me.soapiee.common.listeners.PlayerListener;
+import me.soapiee.common.listeners.PotionRemovalListener;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.PlayerCache;
@@ -25,9 +27,7 @@ public final class BiomeMastery extends JavaPlugin {
     @Getter private PlayerCache playerCache;
     private VaultHook vaultHook;
     @Getter private Logger customLogger;
-    @Getter private PendingRewardsManager pendingRewardsManager;
-    @Getter private CommandCooldownManager cooldownManager;
-//    @Getter private UpdateChecker updateChecker;
+    @Getter private EffectsListener effectsListener;
 
     @Override
     public void onEnable() {
@@ -36,7 +36,8 @@ public final class BiomeMastery extends JavaPlugin {
         playerCache = new PlayerCache(Bukkit.getServer().getOfflinePlayers());
         customLogger = new Logger(this);
         messageManager = new MessageManager(this);
-        cooldownManager = new CommandCooldownManager(this, getConfig().getInt("settings.command_cooldown", 3));
+        effectsListener = new EffectsListener(this);
+        getServer().getPluginManager().registerEvents(effectsListener, this);
 
         // Hooks
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
@@ -53,7 +54,7 @@ public final class BiomeMastery extends JavaPlugin {
 
         // Data setup
         boolean debugMode = getConfig().getBoolean("debug_mode", false);
-        dataManager = new DataManager(getConfig(), messageManager, vaultHook, customLogger, debugMode);
+        dataManager = new DataManager(this, debugMode);
 
         try {
             dataManager.initialise(this);
@@ -64,7 +65,6 @@ public final class BiomeMastery extends JavaPlugin {
         }
 
         dataManager.startChecker(this);
-        pendingRewardsManager = new PendingRewardsManager(this);
 
         // Commands setup
         getCommand("abiomemastery").setExecutor(new AdminCmd(this));
@@ -73,6 +73,8 @@ public final class BiomeMastery extends JavaPlugin {
         // Listeners setup
         PlayerListener playerListener = new PlayerListener(this);
         getServer().getPluginManager().registerEvents(playerListener, this);
+        PotionRemovalListener potionRemovalListener = new PotionRemovalListener(dataManager.getPlayerDataManager());
+        getServer().getPluginManager().registerEvents(potionRemovalListener, this);
 
         // Updater notification setup
         // TODO: Enable later
@@ -82,8 +84,6 @@ public final class BiomeMastery extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        if (pendingRewardsManager != null) pendingRewardsManager.save();
-        if (cooldownManager != null) cooldownManager.save();
         if (dataManager == null) return;
 
         //Remove all active rewards
@@ -95,9 +95,7 @@ public final class BiomeMastery extends JavaPlugin {
             }
         }
 
-        //Save player data
-        playerDataManager.saveAll(false);
-
+        dataManager.saveAll();
         if (dataManager.getDatabase() != null) dataManager.getDatabase().disconnect();
     }
 

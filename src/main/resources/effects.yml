@@ -1,0 +1,15 @@
+FOODRESTORATION:
+  friendly_name: "&aFood Restoration"
+  cooldown: 10 # in seconds
+  hunger_to_restore: 1 # Between 1 and 20
+  effect_conflicts:
+    - LAVASWIMMER
+LAVASWIMMER:
+  friendly_name: "&6Lava Swimmer"
+  speed: 10 # Between 10 and 50
+  effect_conflicts:
+    - FOODRESTORATION
+WATERSWIMMER:
+  friendly_name: "&bWater Swimmer"
+  speed: 0.4 # Between 0.1 and 1.0
+  effect_conflicts: []

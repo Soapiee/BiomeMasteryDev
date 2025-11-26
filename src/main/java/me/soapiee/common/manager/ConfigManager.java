@@ -3,8 +3,9 @@ package me.soapiee.common.manager;
 import lombok.Getter;
 import lombok.Setter;
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.effects.Effect;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardFactory;
-import me.soapiee.common.logic.rewards.types.Reward;
 import me.soapiee.common.util.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -30,7 +31,11 @@ public class ConfigManager {
     @Getter private final HashSet<Biome> enabledBiomes = new HashSet<>();
     @Getter private final HashMap<Integer, Integer> defaultLevelsThresholds = new HashMap<>();
     @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
+    @Getter private final HashMap<String, Effect> effects = new HashMap<>();
     @Getter private int updateInterval;
+
+//    @Getter private final boolean biomesGrouped;
+//    @Getter private final HashMap<Biome, ArrayList<Biome>> groupBiomes = new HashMap<>();
 
     public ConfigManager(FileConfiguration config, RewardFactory rewardFactory, Logger logger) {
         this.config = config;
@@ -42,6 +47,8 @@ public class ConfigManager {
         updateInterval = config.getInt("settings.update_interval", 60);
 
         setDefaultSettings();
+//        biomesGrouped = validateBiomeGroups();
+//        createGroupBiomes();
     }
 
     private void setDefaultSettings() {
@@ -81,12 +88,12 @@ public class ConfigManager {
         else enabledBiomes.addAll(createBiomeBlacklist(listedBiomes));
     }
 
-    public void reload(BiomeMastery main) {
+    public void reload(BiomeMastery main, DataManager dataManager) {
         main.reloadConfig();
         config = main.getConfig();
         updateInterval = config.getInt("settings.update_interval", 60);
         debugMode = config.getBoolean("debug_mode", false);
-        main.getCooldownManager().updateThreshold(config.getInt("settings.command_cooldown", 3));
+        dataManager.getCooldownManager().updateThreshold(config.getInt("settings.command_cooldown", 3));
     }
 
     public List<Biome> createBiomeBlacklist(List<String> listedBiomes) {
@@ -104,19 +111,24 @@ public class ConfigManager {
         List<Biome> whitelist = new ArrayList<>();
 
         for (String rawBiome : listedBiomes) {
-            Biome biome;
-
-            try {
-                biome = Biome.valueOf(rawBiome.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                logger.logToFile(e, "&c'" + rawBiome + "' is not a valid biome");
-                continue;
-            }
-
-            whitelist.add(biome);
+            Biome biome = validateBiome(rawBiome);
+            if (biome != null) whitelist.add(biome);
         }
 
         return whitelist;
+    }
+
+    private Biome validateBiome(String string) {
+        Biome biome;
+
+        try {
+            biome = Biome.valueOf(string.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            logger.logToFile(e, "&c'" + string + "' is not a valid biome");
+            return null;
+        }
+
+        return biome;
     }
 
     public boolean isEnabledWorld(World world) {
@@ -126,4 +138,55 @@ public class ConfigManager {
     public boolean isEnabledBiome(Biome biome) {
         return enabledBiomes.contains(biome);
     }
+
+    //    private boolean validateBiomeGroups() {
+//        if (!config.isConfigurationSection("groups") || config.getConfigurationSection("groups").getKeys(false).isEmpty()) {
+//            if (debugMode) Utils.debugMsg("", ChatColor.RED + "No biome groups set");
+//            return false;
+//        }
+//
+//        //Check there are no duplicate biomes in the biome groups config section
+//        HashSet<Biome> groupBiomes = new HashSet<>();
+//        for (String groupName : config.getConfigurationSection("groups").getKeys(false)){
+//            for (String biomeName : config.getStringList("groups." + groupName)){
+//                Biome biome = validateBiome(biomeName);
+//                if (biome == null) continue;
+//
+//                if (groupBiomes.contains(biome)){
+//                    logger.logToFile(null, "&c'" + biomeName + "' biome appears more than once, in the group lists. \nA biome cannot be in more than one group");
+//                    return false;
+//                }
+//
+//                groupBiomes.add(biome);
+//            }
+//        }
+//
+//        //Check all the parent and child biomes are enabled biomes
+//        for (Biome groupBiome : groupBiomes){
+//            if (!enabledBiomes.contains(groupBiome)) {
+//                logger.logToFile(null, "&c'" + groupBiome.name() + "' is not an enabled biome, so it cannot be in a group");
+//                return false;
+//            }
+//        }
+//
+//        return true;
+//    }
+
+//    private void createGroupBiomes() {
+//        for (String groupName : config.getConfigurationSection("groups").getKeys(false)){
+//            Biome parentBiome = validateBiome(groupName);
+//            if (parentBiome == null) continue;
+//
+//            ArrayList<Biome> childList = new ArrayList<>();
+//            for (String childName : config.getStringList("groups." + groupName)){
+//                Biome childBiome = validateBiome(childName);
+//                if (childBiome == null) continue;
+//
+//                childList.add(childBiome);
+//            }
+//            if (childList.isEmpty()) continue;
+//
+//            groupBiomes.put(parentBiome, childList);
+//        }
+//    }
 }

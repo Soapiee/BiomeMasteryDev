@@ -2,14 +2,18 @@ package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardFactory;
 import me.soapiee.common.logic.rewards.types.*;
+import me.soapiee.common.manager.DataManager;
+import me.soapiee.common.manager.EffectsManager;
 import me.soapiee.common.manager.MessageManager;
 import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
@@ -38,15 +42,26 @@ class RewardFactoryTest {
         MessageManager mockMessageManager = mock(MessageManager.class);
         VaultHook mockVaultHook = mock(VaultHook.class);
         Logger mockLogger = mock(Logger.class);
+        DataManager mockDataManager = mock(DataManager.class);
         PlayerDataManager mockPlayerDataManager = mock(PlayerDataManager.class);
+        EffectsManager mockEffectsManager = mock(EffectsManager.class);
+        YamlConfiguration mockYaml = mock(YamlConfiguration.class);
+
 
         // mock BiomeMastery behavior
         when(mockMain.getConfig()).thenReturn(mockConfig);
+        when(mockMain.getVaultHook()).thenReturn(mockVaultHook);
+        when(mockMain.getMessageManager()).thenReturn(mockMessageManager);
+        when(mockMain.getCustomLogger()).thenReturn(mockLogger);
+        when(mockMain.getDataManager()).thenReturn(mockDataManager);
+        when(mockDataManager.getPlayerDataManager()).thenReturn(mockPlayerDataManager);
+        when(mockMain.getDataManager().getEffectsManager()).thenReturn(mockEffectsManager);
+        when(mockEffectsManager.getConfig()).thenReturn(mockYaml);
 
         // mock Bukkit static methods
         mockedBukkit = Mockito.mockStatic(Bukkit.class);
 
-        rewardFactory = new RewardFactory(mockConfig, mockLogger, mockVaultHook, mockMessageManager, mockPlayerDataManager);
+        rewardFactory = new RewardFactory(mockMain, mockPlayerDataManager, mockEffectsManager);
     }
 
     @AfterEach
@@ -75,7 +90,8 @@ class RewardFactoryTest {
     void givenTypeEffect_whencreate_thenReturnEffectReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("effect");
-        when(mockConfig.getString(path + "reward_item")).thenReturn("night_vision");
+        when(mockConfig.getString(path + "reward_item")).thenReturn("foodrestoration");
+        when(mockConfig.getString(path + "type", "temporary")).thenReturn("temporary");
 
         Reward actualValue = rewardFactory.create(path);
 

@@ -3,7 +3,7 @@ package me.soapiee.common.logic;
 import lombok.Getter;
 import lombok.Setter;
 import me.soapiee.common.logic.events.LevelUpEvent;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

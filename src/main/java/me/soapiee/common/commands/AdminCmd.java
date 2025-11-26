@@ -4,11 +4,13 @@ import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.effects.Effect;
+import me.soapiee.common.logic.effects.EffectType;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import me.soapiee.common.logic.rewards.PendingReward;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
@@ -44,6 +46,7 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
     private final PlayerDataManager playerDataManager;
     private final BiomeDataManager biomeDataManager;
     private final ConfigManager configManager;
+    private final EffectsManager effectsManager;
     private final PlayerCache playerCache;
     private final MessageManager messageManager;
     private final Logger customLogger;
@@ -52,19 +55,38 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
     public AdminCmd(BiomeMastery main) {
         this.main = main;
         dataManager = main.getDataManager();
-        playerDataManager = main.getDataManager().getPlayerDataManager();
-        biomeDataManager = main.getDataManager().getBiomeDataManager();
-        configManager = main.getDataManager().getConfigManager();
+        playerDataManager = dataManager.getPlayerDataManager();
+        biomeDataManager = dataManager.getBiomeDataManager();
+        configManager = dataManager.getConfigManager();
+        effectsManager = dataManager.getEffectsManager();
         playerCache = main.getPlayerCache();
         messageManager = main.getMessageManager();
         customLogger = main.getCustomLogger();
-        pendingRewardsManager = main.getPendingRewardsManager();
+        pendingRewardsManager = dataManager.getPendingRewardsManager();
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (sender instanceof CommandBlock) return true;
         if (!checkPermission(sender, "biomemastery.admin")) return true;
+
+        //DEBUG for effects
+        if (args[0].equalsIgnoreCase("effect")){
+            if (!(sender instanceof Player)) return true;
+            Player player = ((Player) sender).getPlayer();
+
+            EffectReward reward = new EffectReward(main, playerDataManager, effectsManager, EffectType.LAVASWIMMER, true);
+            Effect effect = reward.getEffect();
+
+            if (effect.isActive(player)){
+                reward.remove(player);
+                sendMessage(sender, "&cEffect de-activated");
+            } else {
+                reward.give(player);
+            }
+
+            return true;
+        }
 
         // /abm reload
         if (args.length == 1) {
@@ -574,7 +596,7 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         String reloadOutcome = messageManager.get(Message.RELOADSUCCESS);
 
         boolean errors = false;
-        dataManager.reloadData(main);
+        dataManager.reloadData(main, dataManager);
         if (!messageManager.load(sender)) errors = true;
 
         if (errors) reloadOutcome = messageManager.get(Message.RELOADERROR);
@@ -609,6 +631,8 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
             case 1:
                 results.addAll(Arrays.asList("list", "enable", "disable", "setlevel", "addlevel", "removelevel",
                         "setprogress", "addprogress", "removeprogress", "reset"));
+
+                results.add("effect");
 
                 if (sender instanceof Player && sender.hasPermission("biomemastery.admin")) {
                     results.add("reload");

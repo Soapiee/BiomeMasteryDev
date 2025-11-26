@@ -1,7 +1,10 @@
 package me.soapiee.common.logic.rewards.types;
 
+import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardType;
 import me.soapiee.common.manager.PlayerDataManager;
+import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -13,8 +16,8 @@ public class PotionReward extends Reward {
     private final PotionEffect potion;
     private final PlayerDataManager playerDataManager;
 
-    public PotionReward(PotionType potionType, int amplifier, boolean isTemporary, PlayerDataManager playerDataManager) {
-        super(RewardType.POTION, isTemporary);
+    public PotionReward(BiomeMastery main, PlayerDataManager playerDataManager, PotionType potionType, int amplifier, boolean isTemporary) {
+        super(RewardType.POTION, isTemporary, main.getMessageManager());
         potion = new PotionEffect(potionType.getEffectType(), Integer.MAX_VALUE, amplifier);
         this.playerDataManager = playerDataManager;
     }
@@ -23,6 +26,7 @@ public class PotionReward extends Reward {
     public void give(Player player) {
         playerDataManager.getPlayerData(player.getUniqueId()).addActiveReward(this);
         player.addPotionEffect(potion);
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     public void remove(Player player){
@@ -30,7 +34,7 @@ public class PotionReward extends Reward {
         player.removePotionEffect(potion.getType());
     }
 
-    public PotionEffectType getReward() {
+    public PotionEffectType getPotion() {
         return potion.getType();
     }
 

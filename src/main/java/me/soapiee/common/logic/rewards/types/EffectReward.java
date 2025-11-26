@@ -1,41 +1,53 @@
 package me.soapiee.common.logic.rewards.types;
 
+import lombok.Getter;
+import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.data.PlayerData;
+import me.soapiee.common.logic.effects.Effect;
 import me.soapiee.common.logic.effects.EffectType;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardType;
+import me.soapiee.common.manager.EffectsManager;
+import me.soapiee.common.manager.PlayerDataManager;
+import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
 import org.bukkit.entity.Player;
 
 public class EffectReward extends Reward {
 
-    private final EffectType effect;
+    @Getter private final Effect effect;
+    private final PlayerDataManager playerDataManager;
 
-    public EffectReward(EffectType effect, boolean isTemporary) {
-        super(RewardType.EFFECT, isTemporary);
-        this.effect = effect;
+    public EffectReward(BiomeMastery main,
+                        PlayerDataManager playerDataManager,
+                        EffectsManager effectsManager,
+                        EffectType effect,
+                        boolean isTemporary) {
+        super(RewardType.EFFECT, isTemporary, main.getMessageManager());
+        this.effect = effect.getInstance(main, effectsManager.getConfig());
+        this.playerDataManager = playerDataManager;
     }
 
     @Override
     public void give(Player player) {
-        //TODO Give effect
+        PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
+        if (effect.hasConflict(playerData)) {
+            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDCONFLICT, toString())));
+            return;
+        }
 
-        //TODO Add persistent data key
-//        playerDataManager.getPlayerData(player.getUniqueId()).addActiveReward(this);
+        effect.activate(player);
+        playerData.addActiveReward(this);
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
-    public void remove(Player player){
-        //TODO Remove effect
-
-        //TODO Remove persistent data key
-//        playerDataManager.getPlayerData(player.getUniqueId()).clearActiveReward(this);
-    }
-
-    public EffectType getReward() {
-        //TODO Get persistent data key
-        return effect;
+    public void remove(Player player) {
+        effect.deActivate(player);
+        playerDataManager.getPlayerData(player.getUniqueId()).clearActiveReward(this);
     }
 
     @Override
     public String toString() {
-        return Utils.capitalise(effect.name()) + " effect";
+        return effect.toString() + " effect";
     }
 }

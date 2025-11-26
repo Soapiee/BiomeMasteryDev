@@ -4,12 +4,15 @@ import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.effects.EffectType;
+import me.soapiee.common.logic.effects.Effect;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.*;
-import me.soapiee.common.util.*;
+import me.soapiee.common.util.Logger;
+import me.soapiee.common.util.Message;
+import me.soapiee.common.util.PlayerCache;
+import me.soapiee.common.util.Utils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Biome;
 import org.bukkit.command.Command;
@@ -17,7 +20,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,13 +42,14 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
 
     public UsageCmd(BiomeMastery main) {
         this.main = main;
-        playerDataManager = main.getDataManager().getPlayerDataManager();
-        configManager = main.getDataManager().getConfigManager();
-        biomeDataManager = main.getDataManager().getBiomeDataManager();
+        DataManager dataManager = main.getDataManager();
+        playerDataManager = dataManager.getPlayerDataManager();
+        configManager = dataManager.getConfigManager();
+        biomeDataManager = dataManager.getBiomeDataManager();
         playerCache = main.getPlayerCache();
         messageManager = main.getMessageManager();
         customLogger = main.getCustomLogger();
-        cooldownManager = main.getCooldownManager();
+        cooldownManager = dataManager.getCooldownManager();
     }
 
     @Override
@@ -238,7 +241,8 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
             }
 
             if (player.getLocation().getBlock().getBiome() == biome) {
-                activateReward(player, reward);
+                reward.give(player);
+//                activateReward(player, reward);
                 return;
             }
 
@@ -253,16 +257,13 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
         if (playerData.hasActiveRewards()) {
             if (reward instanceof PotionReward) {
-                PotionEffectType potion = ((PotionReward) reward).getReward();
+                PotionEffectType potion = ((PotionReward) reward).getPotion();
                 return (player.hasPotionEffect(potion));
             }
 
             if (reward instanceof EffectReward) {
-                if (player.getPersistentDataContainer().has(Keys.CUSTOM_EFFECT, PersistentDataType.STRING)) {
-                    EffectType effect = ((EffectReward) reward).getReward();
-                    String string = player.getPersistentDataContainer().get(Keys.CUSTOM_EFFECT, PersistentDataType.STRING);
-                    return (string.equalsIgnoreCase(effect.name()));
-                }
+                Effect effect = ((EffectReward) reward).getEffect();
+                return (effect.isActive(player));
             }
         }
 
@@ -280,10 +281,10 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         sendMessage(player, messageManager.getWithPlaceholder(Message.REWARDDEACTIVATED, reward.toString()));
     }
 
-    private void activateReward(Player player, Reward reward) {
-        reward.give(player);
-        sendMessage(player, messageManager.getWithPlaceholder(Message.REWARDACTIVATED, reward.toString()));
-    }
+//    private void activateReward(Player player, Reward reward) {
+//        reward.give(player);
+//        sendMessage(player, messageManager.getWithPlaceholder(Message.REWARDACTIVATED, reward.toString()));
+//    }
 
     private void sendHelpMessage(CommandSender sender, String label) {
         String message = messageManager.getWithPlaceholder(Message.PLAYERHELP, label);
@@ -392,7 +393,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         }
 
         if (!player.isOnline()) {
-            String message = messageManager.getWithPlaceholder(Message.REWARDCLAIMINBIOME, biomeData.getBiome().name());
+            String message = messageManager.getWithPlaceholder(Message.REWARDCLAIMINBIOME, biomeData.getBiomeName());
             return message == null ? "" : message;
         }
 
@@ -404,10 +405,10 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
 
         Biome targetLocation = onlinePlayer.getLocation().getBlock().getBiome();
         String message;
-        if (targetLocation.name().equalsIgnoreCase(biomeData.getBiome().name()))
+        if (targetLocation.name().equalsIgnoreCase(biomeData.getBiomeName()))
             message = messageManager.get(Message.REWARDACTIVATE);
         else
-            message = messageManager.getWithPlaceholder(Message.REWARDCLAIMINBIOME, biomeData.getBiome().name());
+            message = messageManager.getWithPlaceholder(Message.REWARDCLAIMINBIOME, biomeData.getBiomeName());
 
         return message == null ? "" : message;
     }

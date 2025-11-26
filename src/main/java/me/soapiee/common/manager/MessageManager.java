@@ -3,7 +3,7 @@ package me.soapiee.common.manager;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.rewards.types.Reward;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
@@ -104,7 +104,7 @@ public class MessageManager {
     }
 
     public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel) {
-        String formattedBiomeName = Utils.capitalise(biomeData.getBiome().name());
+        String formattedBiomeName = Utils.capitalise(biomeData.getBiomeName());
         int currentLevel = biomeLevel.getLevel();
         String formattedTarget = Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
         String formattedProgress = Utils.formatTargetDuration(biomeLevel.getProgress());

@@ -1,6 +1,10 @@
 package me.soapiee.common.logic.rewards.types;
 
+import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardType;
+import me.soapiee.common.util.Message;
+import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -10,8 +14,8 @@ public class CommandReward extends Reward {
 
     private final ArrayList<String> commandList;
 
-    public CommandReward(ArrayList<String> commandList) {
-        super(RewardType.COMMAND, true);
+    public CommandReward(BiomeMastery main, ArrayList<String> commandList) {
+        super(RewardType.COMMAND, true, main.getMessageManager());
         this.commandList = commandList;
     }
 
@@ -20,6 +24,7 @@ public class CommandReward extends Reward {
         for (String command : commandList) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
         }
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     @Override

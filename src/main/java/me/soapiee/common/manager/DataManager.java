@@ -4,7 +4,6 @@ import com.zaxxer.hikari.pool.HikariPool;
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.HikariCPConnection;
-import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.logic.ProgressChecker;
 import me.soapiee.common.logic.rewards.RewardFactory;
 import me.soapiee.common.util.Logger;
@@ -23,19 +22,24 @@ public class DataManager {
     @Getter private final ConfigManager configManager;
     @Getter private final BiomeDataManager biomeDataManager;
     @Getter private final PlayerDataManager playerDataManager;
+    @Getter private final EffectsManager effectsManager;
+    @Getter private PendingRewardsManager pendingRewardsManager;
+    @Getter private CommandCooldownManager cooldownManager;
     @Getter private HikariCPConnection database;
 
     private ProgressChecker progressChecker;
 
-    public DataManager(FileConfiguration config,
-                       MessageManager messageManager,
-                       VaultHook vaultHook,
-                       Logger logger,
-                       boolean debugMode) {
+    public DataManager(BiomeMastery main, boolean debugMode) {
+        FileConfiguration mainConfig = main.getConfig();
+        Logger logger = main.getCustomLogger();
+
         playerDataManager = new PlayerDataManager();
-        RewardFactory rewardFactory = new RewardFactory(config, logger, vaultHook, messageManager, playerDataManager);
-        configManager = new ConfigManager(config, rewardFactory, logger);
-        biomeDataManager = new BiomeDataManager(configManager, rewardFactory, config, debugMode);
+        effectsManager = new EffectsManager(main);
+        RewardFactory rewardFactory = new RewardFactory(main, playerDataManager, effectsManager);
+        configManager = new ConfigManager(mainConfig, rewardFactory, logger);
+        biomeDataManager = new BiomeDataManager(configManager, rewardFactory, mainConfig, debugMode);
+        cooldownManager = new CommandCooldownManager(main, mainConfig.getInt("settings.command_cooldown", 3));
+        pendingRewardsManager = new PendingRewardsManager(main, biomeDataManager);
     }
 
     public void initialise(BiomeMastery main) throws IOException {
@@ -66,8 +70,8 @@ public class DataManager {
         Utils.consoleMsg(ChatColor.DARK_GREEN + "File Storage enabled.");
     }
 
-    public void reloadData(BiomeMastery main) {
-        configManager.reload(main);
+    public void reloadData(BiomeMastery main, DataManager dataManager) {
+        configManager.reload(main, dataManager);
         startChecker(main);
     }
 
@@ -79,6 +83,12 @@ public class DataManager {
             }
 
         progressChecker = new ProgressChecker(main);
+    }
+
+    public void saveAll(){
+        playerDataManager.saveAll(false);
+        cooldownManager.save();
+        pendingRewardsManager.save();
     }
 
 }
