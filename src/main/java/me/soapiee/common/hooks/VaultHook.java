@@ -12,8 +12,8 @@ public class VaultHook {
     private static Permission permissions = null;
 
     public VaultHook() {
-        this.setupEconomy();
-        this.setupPermissions();
+        setupEconomy();
+        setupPermissions();
     }
 
     private void setupEconomy() {

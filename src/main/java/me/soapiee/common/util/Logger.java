@@ -17,7 +17,6 @@ import java.util.Date;
 public class Logger {
 
     private final File logFile;
-    private final boolean debugMode;
 
     public Logger(BiomeMastery main) {
         logFile = new File(main.getDataFolder() + File.separator + "logger.log");
@@ -28,8 +27,6 @@ public class Logger {
                 Utils.consoleMsg(ChatColor.RED + "Error creating logger file");
             }
         }
-
-        debugMode = main.getConfig().getBoolean("enabled_debug");
     }
 
     public void logToFile(Exception error, String string) {

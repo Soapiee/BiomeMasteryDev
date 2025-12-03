@@ -1,9 +1,14 @@
 package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.BiomeData;
+import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
+import me.soapiee.common.util.Utils;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -12,19 +17,20 @@ public class MessageManager {
 
     private final BiomeMastery main;
     private final Logger customLogger;
+
     private final File file;
     private final YamlConfiguration contents;
 
     public MessageManager(BiomeMastery main) {
         this.main = main;
-        this.customLogger = main.getCustomLogger();
-        this.file = new File(main.getDataFolder(), "messages.yml");
-        this.contents = new YamlConfiguration();
+        customLogger = main.getCustomLogger();
+        file = new File(main.getDataFolder(), "messages.yml");
+        contents = new YamlConfiguration();
 
-        this.load();
+        load(null);
     }
 
-    public boolean load() {
+    public boolean load(CommandSender sender) {
         if (!file.exists()) {
             main.saveResource("messages.yml", false);
         }
@@ -32,57 +38,150 @@ public class MessageManager {
         try {
             contents.load(file);
         } catch (Exception ex) {
-            customLogger.logToFile(ex, get(Message.RELOADERROR));
+            if (sender != null) {
+                customLogger.logToPlayer(sender, ex, get(Message.RELOADERROR));
+            }
+            return false;
         }
         return true;
     }
 
-    public boolean save() {
+    public void save(Message messageEnum) {
         try {
             contents.save(file);
+            contents.load(file);
         } catch (Exception ex) {
-            customLogger.logToFile(ex, ChatColor.RED + "Could not add new fields to messages.yml");
+            customLogger.logToFile(ex, ChatColor.RED + "Could not add the'" + messageEnum.getPath() + "' field to messages.yml");
         }
-        return true;
+    }
+
+    public String getPrefix(Message messageEnum){
+        if (messageEnum == Message.UPDATEAVAILABLE
+                || messageEnum == Message.PLAYERHELP
+                || messageEnum == Message.ADMINHELP
+                || messageEnum == Message.BIOMEBASICINFOHEADER
+                || messageEnum == Message.BIOMEBASICINFOFORMAT
+                || messageEnum == Message.BIOMEBASICINFOSEPERATOR
+                || messageEnum == Message.BIOMEBASICINFOMAX
+                || messageEnum == Message.BIOMEDETAILEDFORMAT
+                || messageEnum == Message.BIOMEDETAILEDMAX
+                || messageEnum == Message.BIOMEREWARDFORMAT
+                || messageEnum == Message.REWARDUNCLAIMED
+                || messageEnum == Message.REWARDCLAIMED
+                || messageEnum == Message.REWARDCLAIMINBIOME
+                || messageEnum == Message.REWARDACTIVATE
+                || messageEnum == Message.REWARDDEACTIVATE
+                || messageEnum == Message.WORLDLISTHEADER
+                || messageEnum == Message.BIOMELISTHEADER) return "";
+
+        String path = Message.PREFIX.getPath();
+        if (contents.isSet(path)) {
+            return contents.getString(path).isEmpty() ? "" : contents.getString(path) + " ";
+        }
+        else return "";
     }
 
     public String get(Message messageEnum) {
         String path = messageEnum.getPath();
-        String def = messageEnum.getDefault();
+        String defaultText = messageEnum.getDefaultText();
 
         if (contents.isSet(path)) {
-            return (contents.isList(path)) ? String.join("\n", contents.getStringList(path)) : contents.getString(path);
+            String text = ((contents.isList(path)) ? String.join("\n", contents.getStringList(path)) : contents.getString(path));
+
+            if (text.isEmpty()) return null;
+            return getPrefix(messageEnum) + text;
         } else {
-            if (def.contains("\n")) {
+            if (defaultText.contains("\n")) {
                 String[] list;
-                list = def.split("\n");
+                list = defaultText.split("\n");
                 contents.set(path, list);
             } else {
-                contents.set(path, def);
+                contents.set(path, defaultText);
             }
-            save();
-            return def;
+            save(messageEnum);
+            return getPrefix(messageEnum) + defaultText;
         }
     }
 
+    public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel) {
+        String formattedBiomeName = Utils.capitalise(biomeData.getBiomeName());
+        int currentLevel = biomeLevel.getLevel();
+        String formattedTarget = Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
+        String formattedProgress = Utils.formatTargetDuration(biomeLevel.getProgress());
+
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        return message.replace("%biome%", formattedBiomeName)
+                .replace("%player_name%", playerName)
+                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
+                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
+                .replace("%player_progress%", formattedProgress)
+                .replace("%target_duration_formatted%", formattedTarget);
+    }
+
     public String getWithPlaceholder(Message messageEnum, String string) {
-        return get(messageEnum).replace("%player%", string)
-                .replace("%sign_ID%", string)
-                .replace("%game_ID%", string)
-                .replace("%loc_ID%", string)
-                .replace("%task_message%", string.replaceFirst(("(\\W)(\\D)"), ""))
-                .replace("%question%", string)
-                .replace("%correction_message%\n", (string.isEmpty()) ? "" : string + "\n")
-                .replace("%winners%", string)
-                .replace("%winner%", string);
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        return get(messageEnum).replace("%player_name%", string)
+                .replace("%cmd_label%", string)
+                .replace("%world%", string)
+                .replace("%reward%", string)
+                .replace("%biome%", Utils.capitalise(string));
+    }
+
+    public String getWithPlaceholder(Message messageEnum, String string1, String string2) {
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        return message.replace("%player_name%", string2)
+                .replace("%reward%", string2)
+                .replace("%biome%", string1);
+    }
+
+    public String getWithPlaceholder(Message messageEnum, int input, String biomeName) {
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        String string = String.valueOf(input);
+        return message.replace("%level%", string)
+                .replace("%level_formatted%",string + (input > 1 ? " levels" : " level") )
+                .replace("%progress%",Utils.formatTargetDuration(input))
+                .replace("%biome%", biomeName);
+    }
+
+    public String getWithPlaceholder(Message messageEnum, int level, Reward reward, String string) {
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        return message.replace("%level%", String.valueOf(level))
+                .replace("%reward%", reward.toString())
+                .replace("%biome%", string)
+                .replace("%reward_status%", string);
     }
 
     public String getWithPlaceholder(Message messageEnum, int integer) {
-        String replacement = integer + " second" + (integer == 1 ? "" : "s");
+        String message = get(messageEnum);
+        if (message == null) return null;
 
-        return get(messageEnum).replace("%countdown%", replacement)
-                .replace("%round_countdown%", replacement)
-                .replace("%game_ID%", String.valueOf(integer));
+        String string = String.valueOf(integer);
+        return message.replace("%level%", string)
+                .replace("%cooldown%", string + (integer > 1 ? " seconds" : " second"))
+                .replace("%current_level%", string)
+                .replace("%input%", string);
+    }
+
+    public String getWithPlaceholder(Message messageEnum, String playerName, int integer, String biomeName) {
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        String string = String.valueOf(integer);
+        return message.replace("%level%", string + (integer > 1 ? " levels" : " level"))
+                .replace("%value%", string)
+                .replace("%progress%", Utils.formatTargetDuration(integer))
+                .replace("%biome%", biomeName)
+                .replace("%player_name%", playerName);
     }
 
 }

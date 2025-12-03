@@ -50,9 +50,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <outputFile>D:\Coding\Test Servers\1.21.4 R3\Plugins\BiomeMastery.jar</outputFile>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -70,17 +67,51 @@
                 </configuration>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
+<!--        <resources>-->
+<!--            <resource>-->
+<!--                <directory>src/main/resources</directory>-->
+<!--                <filtering>true</filtering>-->
 
-                <includes>
-                    <include>*</include>
-                </includes>
-            </resource>
-        </resources>
+<!--                <includes>-->
+<!--                    <include>*</include>-->
+<!--                </includes>-->
+<!--            </resource>-->
+<!--        </resources>-->
     </build>
+
+    <profiles>
+        <!-- only trigger this on a windows build, for non-windows this creates folders that shouldn't exist -->
+        <profile>
+            <id>windows-shade</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <outputFile>D:\Coding\Test Servers\1.21.9 R6\Plugins\BiomeMastery.jar</outputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>

@@ -1,4 +1,4 @@
-# Datastorage Settings
+# Data Storage Settings
 database:
   enabled: false # If false, data is stored as files
   host: "localhost"
@@ -7,18 +7,30 @@ database:
   username: "root"
   password: ""
 
-
-default_settings:
+settings:
   # In seconds, how often should players be checked for the biome duration threshold
   # Recommended no less than 10 seconds. Bigger servers should have a higher interval
-  update_interval: 30
+  # Default: 60
+  update_interval: 60
 
+  # In seconds, what is the cooldown for any command that triggers player data to be updated
+  # The commands: /biome info, /biome <biome>
+  # Must be 1 second or higher
+  # Default: 3
+  command_cooldown: 3
+
+  # Do you want there to be a notification given in console when there is an update available
+  # Default: true
+  plugin_update_notification: true
+
+default_biome_settings:
   # List the worlds you want this plugin to work on
   enabled_worlds:
     - 'world'
 
   # Set this to false if you want to use the blacklist list as a blacklist
   # Set this to true if you want to use the blacklist list as a whitelist instead
+  # Default: false
   use_blacklist_as_whitelist: false
 
   # If the above setting is false: List biomes that you DON'T want rewards for
@@ -31,37 +43,79 @@ default_settings:
   # these settings will automatically apply.
   levels:
     '1':
-      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
       reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
-      reward_item: haste:2 #potion effect:amplifier:duration
+      reward_item: jump:2 #potion effect:amplifier:duration
     '2':
-      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
       reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
-      reward_item: haste:2 #potion effect:amplifier:duration
+      reward_item: jump:2 #potion effect:amplifier:duration
 
+# If you would like to group biomes together, create a name for that group here.
+# Under the group name, list all the biomes that belong to that group
+
+# The biome that you list first will be the parent biome.
+# Parent biome: That will be the one that holds all the data. So if you want to define rewards for the group
+# list them under the parent biome
+groups:
+  ocean_group:
+    - OCEAN
+    - DEEP_OCEAN
+    - FROZEN_OCEAN
+    - DEEP_FROZEN_OCEAN
+    - COLD_OCEAN
+    - DEEP_COLD_OCEAN
+    - LUKEWARM_OCEAN
+    - DEEP_LUKEWARM_OCEAN
+    - WARM_OCEAN
+  random_group:
+    - FOREST
+    - GROVE
 
 # Anything set in here will override the default settings
 # Use this if you want specific perks for a certain biome
 # Make sure the biome name is from this list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Biome.html
 biomes:
-  # permanent rewards are rewards that a player can activate/deactivate wherever and whenever they want
+  # Permanent rewards are rewards that a player can activate/deactivate whenever they want whilst in the specific biome.
+  # For example, if a player is at level 2 for the plains biome (see below),
+  # they will be able to activate night vision every single time they're in that biome in the future
   #
-  # temporary rewards are rewards that are only active when the player is in that biome
-  # For example, if a player is at level 2 for the plains biome,
-  # they will get night vision every single time they're in that biome in the future
+  # Temporary rewards are rewards that are received only once.
+  #
+  # Regardless if the reward is temporary or permanent, if it's a potion or effect reward type, it will
+  # be removed once the player leaves that biome
+
+  FOREST:
+    # Note the "forest" biome is inside a group above.
+    # Players inside the Grove biome will win these rewards when the threshold is reached.
+    # "random_group" will be the name of the biome level that players can see in /biome info
+    '1':
+      type: permanent # Valid types: temporary or permanent (Only needed for potion + effect reward types)
+      target_duration: 60 # seconds
+      reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
+      reward_item: jump:2 #potion effect:amplifier:duration
+    '2':
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
+      target_duration: 60 # seconds
+      reward_type: effect # Valid types: potion, effect, item, permission, command, experience, currency
+      reward_item: night_vision # Valid effects: water_walker, night_vision
+    '3':
+      target_duration: 60 # seconds
+      reward_type: item
+      reward_item: apple:5 # material:quantity
 
   PLAINS:
     '1':
-      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
+      type: permanent # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
-      reward_type: potion # Valid types: potion, effect, item, permission, command, xp, currency
-      reward_item: haste:2 #potion effect:amplifier:duration
+      reward_type: potion # Valid types: potion, effect, item, permission, command, experience, currency
+      reward_item: jump:2 #potion effect:amplifier:duration
     '2':
-      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
-      reward_type: effect # Valid types: potion, effect, item, permission, command, xp, currency
+      reward_type: effect # Valid types: potion, effect, item, permission, command, experience, currency
       reward_item: night_vision # Valid effects: water_walker, night_vision
     '3':
       target_duration: 60 # seconds
@@ -72,13 +126,13 @@ biomes:
       reward_type: currency
       reward_item: 2000 #amount
     '5':
-      type: temporary # Valid types: temporary or permanent (Only needed for potion, effect + command reward types)
+      type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
       reward_type: command
       reward_item: give %player% apple 2 # use placeholder %player%
     '6':
       target_duration: 60 # seconds
-      reward_type: xp
+      reward_type: experience
       reward_item: 10 # how many experience levels to give
 
   FLOWER_FOREST:
@@ -86,7 +140,7 @@ biomes:
       type: temporary
       target_duration: 60
       reward_type: potion
-      reward_item: haste:2
+      reward_item: jump:2
     '2':
       type: temporary
       target_duration: 60
@@ -100,7 +154,7 @@ biomes:
     '4':
       type: temporary
       target_duration: 60
-      reward_type: xp
+      reward_type: experience
       reward_item: 10
     '5':
       type: temporary
