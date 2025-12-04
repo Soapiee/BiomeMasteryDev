@@ -1,7 +1,9 @@
 package me.soapiee.common.logic;
 
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.manager.BiomeDataManager;
 import me.soapiee.common.manager.ConfigManager;
+import me.soapiee.common.manager.DataManager;
 import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
@@ -14,10 +16,12 @@ public class ProgressChecker extends BukkitRunnable {
 
     private final PlayerDataManager playerDataManager;
     private final ConfigManager configManager;
+    private final BiomeDataManager biomeDataManager;
 
-    public ProgressChecker(BiomeMastery main) {
-        playerDataManager = main.getDataManager().getPlayerDataManager();
-        configManager = main.getDataManager().getConfigManager();
+    public ProgressChecker(BiomeMastery main, DataManager dataManager) {
+        playerDataManager = dataManager.getPlayerDataManager();
+        configManager = dataManager.getConfigManager();
+        biomeDataManager = dataManager.getBiomeDataManager();
 
         long delay = configManager.getUpdateInterval();
         if (configManager.isDebugMode())
@@ -37,7 +41,7 @@ public class ProgressChecker extends BukkitRunnable {
             BiomeLevel playerLevel = playerDataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
             if (playerLevel.isMaxLevel()) continue;
 
-            playerLevel.updateProgress();
+            playerLevel.updateProgress(playerBiome);
         }
     }
 }

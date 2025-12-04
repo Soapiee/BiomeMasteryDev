@@ -1,8 +1,7 @@
 package me.soapiee.common.data;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.logic.BiomeData;
-import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.*;
 import me.soapiee.common.manager.BiomeDataManager;
 import me.soapiee.common.manager.ConfigManager;
 import me.soapiee.common.manager.DataManager;
@@ -144,45 +143,4 @@ public class PlayerDatabaseStorage implements PlayerStorageHandler{
             }
         });
     }
-
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-//    @Override
-//    public void readData() {
-//        for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
-//            if (biomeData.isChild()) continue;
-//
-//            Biome key = biomeData.getBiome();
-//            getPlayerData(key.name(), (player2, results, error) -> {
-//                if (error != null) {
-//                    logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
-//                    return;
-//                }
-//
-//                playerData.getBiomesMap().get(key).setLevel(results.getLevel());
-//                playerData.getBiomesMap().get(key).setProgress(results.getProgress());
-//            });
-//        }
-//    }
-//
-//    private void createPlayerLevels(){
-//        if (configManager.isBiomesGrouped()){
-//            for (Biome parentBiome : configManager.getGroupBiomes().keySet()) {
-//                playerData.getBiomesMap().put(parentBiome, new BiomeLevel(player, biomeDataManager.getBiomeData(parentBiome)));
-//            }
-//        }
-//
-//        for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
-//            BiomeLevel level;
-//
-//            if (biomeData.isChild()){
-//                Biome parentBiome = biomeData.getParent();
-//                level = playerData.getBiomesMap().get(parentBiome);
-//            } else {
-//                level = new BiomeLevel(player, biomeData);
-//            }
-//
-//            playerData.getBiomesMap().put(biomeData.getBiome(), level);
-//        }
-//    }
-
 }

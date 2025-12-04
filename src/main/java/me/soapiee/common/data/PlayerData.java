@@ -3,9 +3,9 @@ package me.soapiee.common.data;
 import lombok.Getter;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.logic.BiomeLevel;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
-import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.ConfigManager;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Biome;
@@ -15,13 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
 
     @Getter private final OfflinePlayer player;
-    @Getter private final Map<Biome, BiomeLevel> biomesMap = new ConcurrentHashMap<>();
+    @Getter private final Map<Biome, BiomeLevel> biomesMap = new HashMap<>();
     @Getter private final ArrayList<Reward> activeRewards = new ArrayList<>();
     private final PlayerStorageHandler storageHandler;
 
@@ -56,18 +56,19 @@ public class PlayerData {
     }
 
     public void clearActiveRewards() {
-        if (player.isOnline()) {
-            Player onlinePlayer = player.getPlayer();
+        if (!player.isOnline()) return;
 
-            ArrayList<Reward> copyActiveRewards = new ArrayList<>(getActiveRewards());
+        Player onlinePlayer = player.getPlayer();
+        if (onlinePlayer == null) return;
 
-            for (Reward reward : copyActiveRewards) {
-                if (reward instanceof PotionReward) {
-                    ((PotionReward) reward).remove(onlinePlayer);
-                }
-                if (reward instanceof EffectReward) {
-                    ((EffectReward) reward).remove(onlinePlayer);
-                }
+        ArrayList<Reward> copyActiveRewards = new ArrayList<>(getActiveRewards());
+
+        for (Reward reward : copyActiveRewards) {
+            if (reward instanceof PotionReward) {
+                ((PotionReward) reward).remove(onlinePlayer);
+            }
+            if (reward instanceof EffectReward) {
+                ((EffectReward) reward).remove(onlinePlayer);
             }
         }
     }

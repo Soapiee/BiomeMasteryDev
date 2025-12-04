@@ -21,12 +21,11 @@ public class BiomeDataManager {
 
     public BiomeDataManager(ConfigManager configManager,
                             RewardFactory rewardFactory,
-                            FileConfiguration config,
-                            boolean isDebugMode) {
+                            FileConfiguration config) {
         this.configManager = configManager;
         this.rewardFactory = rewardFactory;
         this.config = config;
-        this.isDebugMode = isDebugMode;
+        this.isDebugMode = configManager.isDebugMode();
         createAllBiomeData();
     }
 
@@ -50,51 +49,4 @@ public class BiomeDataManager {
     public BiomeData getBiomeData(String biome) throws IllegalArgumentException {
         return biomeDataMap.getOrDefault(Biome.valueOf(biome), null);
     }
-
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-
-//    public BiomeDataManager(ConfigManager configManager,
-//                            RewardFactory rewardFactory,
-//                            FileConfiguration config,
-//                            boolean isDebugMode) {
-//        this.configManager = configManager;
-//        this.rewardFactory = rewardFactory;
-//        this.config = config;
-//        this.isDebugMode = isDebugMode;
-//
-//        if (!configManager.getGroupBiomes().isEmpty()) createGroupBiomeData();
-//        createSingularBiomeData();
-//    }
-//
-//    private void createGroupBiomeData() {
-//        for (Biome parentBiome : configManager.getGroupBiomes().keySet()) {
-//            biomeDataMap.put(parentBiome, new ParentBiome(configManager, rewardFactory, config, parentBiome));
-//            // Make sure the BiomeData<ParentBiome> collects the list of its children from the ConfigManager (getGroupBiomes().get(parentBiome))
-//
-//            for (Biome childBiome : configManager.getGroupBiomes().get(parentBiome)){
-//                biomeDataMap.put(childBiome, new ChildBiome(configManager, rewardFactory, config, childBiome, parentBiome));
-//            }
-//        }
-//    }
-//
-//    private void createSingularBiomeData() {
-//        for (Biome enabledBiome : configManager.getEnabledBiomes()) {
-//            if (biomeDataMap.containsKey(enabledBiome)) return;
-//            if (isDebugMode) Utils.debugMsg("", "&cBiome: " + enabledBiome.name() + " is part of a group");
-//
-//            biomeDataMap.put(enabledBiome, new SingularBiome(configManager, rewardFactory, config, enabledBiome));
-//        }
-//    }
-//
-//    public BiomeData getBiomeData(Biome biome) {
-//        BiomeData biomeData = biomeDataMap.getOrDefault(biome, null);
-//        if (biomeData.isChild()) return biomeDataMap.get(biome.getParent());
-//        return biomeData;
-//    }
-//
-//    public BiomeData getBiomeData(String biome) throws IllegalArgumentException {
-//        BiomeData biomeData = biomeDataMap.getOrDefault(Biome.valueOf(biome), null);
-//        if (biomeData.isChild) return biomeDataMap.get(biome.getParent());
-//        return biomeData;
-//    }
 }

@@ -1,9 +1,9 @@
 package me.soapiee.common.logic.effects;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.logic.effects.types.FoodEffect;
+import me.soapiee.common.logic.effects.types.FreeFoodEffect;
 import me.soapiee.common.logic.effects.types.LavaSwimmerEffect;
-import me.soapiee.common.logic.effects.types.WaterSwimmerEffect;
+import me.soapiee.common.logic.effects.types.SpeedSwimmerEffect;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.function.BiFunction;
@@ -16,8 +16,8 @@ public enum EffectType {
 //    FIGHTER(c -> null), //Deal double damage to hostile mobs
     LAVASWIMMER(LavaSwimmerEffect::new), //Fire res and speed in lava
 //    FOODRESTORATION((m, c) -> null), //Restores hunger when killing mobs
-    FOODRESTORATION(FoodEffect::new), //Restores hunger overtime
-    WATERSWIMMER(WaterSwimmerEffect::new), //Restores hunger overtime
+    FREEFOOD(FreeFoodEffect::new), //Restores hunger overtime
+    SPEEDSWIMMER(SpeedSwimmerEffect::new), //Swim faster in water
 //    LOOT(c -> null), //Extra loot drops
 //    FALLDAMAGE(c -> null), //No fall damage
 //    WOLFWHISPER(c -> null), //Spawns 5 tamed wolves

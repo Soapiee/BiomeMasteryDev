@@ -5,9 +5,9 @@ import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
 import me.soapiee.common.logic.effects.Effect;
+import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.types.EffectReward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
-import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
@@ -38,7 +38,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
     private final PlayerCache playerCache;
     private final MessageManager messageManager;
     private final Logger customLogger;
-    private final CommandCooldownManager cooldownManager;
+    private final CmdCooldownManager cooldownManager;
 
     public UsageCmd(BiomeMastery main) {
         this.main = main;
@@ -152,6 +152,10 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
                 target = playerCache.getOfflinePlayer(args[1]);
 
                 if (target == null) {
+                    if (!(sender instanceof Player)) {
+                        sendMessage(sender, messageManager.get(Message.CONSOLEUSAGEERROR));
+                        return null;
+                    }
                     target = (Player) sender;
                 }
             }
@@ -205,8 +209,10 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
 
         Player onlinePlayer = target.getPlayer();
         Biome locBiome = onlinePlayer.getLocation().getBlock().getBiome();
-        if (configManager.isEnabledBiome(locBiome))
-            playerDataManager.getPlayerData(onlinePlayer.getUniqueId()).getBiomeLevel(locBiome).updateProgress();
+        if (!configManager.isEnabledBiome(locBiome)) return;
+
+        BiomeLevel biomeLevel = playerDataManager.getPlayerData(onlinePlayer.getUniqueId()).getBiomeLevel(locBiome);
+        biomeLevel.updateProgress(locBiome);
     }
 
     private void toggleReward(Player player, Biome biome, String value) {
@@ -242,7 +248,6 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
 
             if (player.getLocation().getBlock().getBiome() == biome) {
                 reward.give(player);
-//                activateReward(player, reward);
                 return;
             }
 
@@ -280,11 +285,6 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
 
         sendMessage(player, messageManager.getWithPlaceholder(Message.REWARDDEACTIVATED, reward.toString()));
     }
-
-//    private void activateReward(Player player, Reward reward) {
-//        reward.give(player);
-//        sendMessage(player, messageManager.getWithPlaceholder(Message.REWARDACTIVATED, reward.toString()));
-//    }
 
     private void sendHelpMessage(CommandSender sender, String label) {
         String message = messageManager.getWithPlaceholder(Message.PLAYERHELP, label);
@@ -418,6 +418,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         // updateProgress((Player) sender);
         sendMessage(player, messageManager.get(Message.GUIOPENED));
     }
+
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {

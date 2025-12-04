@@ -3,17 +3,12 @@ package me.soapiee.common.listeners;
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.events.LevelUpEvent;
-import me.soapiee.common.logic.rewards.PendingReward;
-import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.PlayerCache;
 import me.soapiee.common.util.Utils;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
@@ -24,6 +19,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -38,18 +34,19 @@ public class PlayerListener implements Listener {
     private final PlayerCache playerCache;
     private final PlayerDataManager playerDataManager;
     private final ConfigManager configManager;
+    private final BiomeDataManager biomeDataManager;
     private final MessageManager messageManager;
     private final PendingRewardsManager pendingRewardsManager;
     private final Logger logger;
 
     private final Map<UUID, Location> prevLocMap = new HashMap<>();
 
-    public PlayerListener(BiomeMastery main) {
+    public PlayerListener(BiomeMastery main, DataManager dataManager) {
         this.main = main;
         playerCache = main.getPlayerCache();
-        DataManager dataManager = main.getDataManager();
         playerDataManager = dataManager.getPlayerDataManager();
         configManager = dataManager.getConfigManager();
+        biomeDataManager = dataManager.getBiomeDataManager();
         messageManager = main.getMessageManager();
         pendingRewardsManager = dataManager.getPendingRewardsManager();
         logger = main.getCustomLogger();
@@ -77,7 +74,7 @@ public class PlayerListener implements Listener {
             }
         } else playerData = playerDataManager.getPlayerData(player.getUniqueId());
 
-        checkPendingRewards(player);
+        if (checkPendingRewards(player)) givePendingRewards(player);
         prevLocMap.put(uuid, player.getLocation());
 
         World playerWorld = player.getWorld();
@@ -87,27 +84,63 @@ public class PlayerListener implements Listener {
         setBiomeStart(playerData, playerBiome);
     }
 
-    private void updateNotif(Player player){
+    private void updateNotif(Player player) {
 //        if (configManager.isUpdateNotif()) main.getUpdateChecker().updateAlert(player);
     }
 
-    private void checkPendingRewards(Player player) {
-        pendingRewardsManager.giveAll(player);
-        pendingRewardsManager.removeAll(player.getUniqueId());
+    private boolean checkPendingRewards(Player player) {
+        return pendingRewardsManager.has(player.getUniqueId());
+    }
+
+    private void givePendingRewards(Player player) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!player.isOnline()) return;
+                pendingRewardsManager.giveAll(player);
+                pendingRewardsManager.removeAll(player.getUniqueId());
+            }
+        }.runTaskLater(main, 20);
     }
 
     @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event){
+    public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         prevLocMap.put(player.getUniqueId(), player.getLocation());
     }
 
     @EventHandler
-    public void onRespawn(PlayerRespawnEvent event){
-        biomeChange(event.getPlayer(), event.getRespawnLocation());
+    public void onRespawn(PlayerRespawnEvent event) {
+        processBiomeChange(event.getPlayer(), event.getRespawnLocation());
     }
 
-    private void biomeChange(Player player, Location newLoc){
+    public boolean worldHasChanged(World previousWorld, World newWorld) {
+        return previousWorld != newWorld;
+    }
+
+    public boolean biomeHasChanged(Biome previousBiome, Biome newBiome) {
+        if (previousBiome == newBiome) return false;
+        return !previousBiome.name().equalsIgnoreCase(newBiome.name());
+    }
+
+    public boolean locationHasChanged(World prevWorld, World newWorld, Biome prevBiome, Biome newBiome) {
+        if (worldHasChanged(prevWorld, newWorld)) return true;
+        return (biomeHasChanged(prevBiome, newBiome));
+    }
+
+    private void clearActiveRewards(Player player, Biome previousBiome) {
+        PlayerData playerData = playerDataManager.getPlayerData(player.getUniqueId());
+        playerData.clearActiveRewards();
+
+        String biomeString = biomeDataManager.getBiomeData(previousBiome).getBiomeName();
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDSDEACTIVATED, biomeString)));
+    }
+
+    public boolean isLocEnabled(World world, Biome biome) {
+        return (configManager.isEnabledWorld(world) && (configManager.isEnabledBiome(biome)));
+    }
+
+    private void processBiomeChange(Player player, Location newLoc) {
         UUID uuid = player.getUniqueId();
         Location prevLoc = prevLocMap.get(uuid);
         World previousWorld = prevLoc.getWorld();
@@ -115,35 +148,14 @@ public class PlayerListener implements Listener {
         World newWorld = newLoc.getWorld();
         Biome newBiome = newLoc.getBlock().getBiome();
 
-        if (previousWorld == newWorld) {
-            if (previousBiome == newBiome) return;
-            else if (previousBiome.name().equalsIgnoreCase(newBiome.name())) return;
-        }
-
+        if (!locationHasChanged(previousWorld, newWorld, previousBiome, newBiome)) return;
         prevLocMap.put(uuid, newLoc);
 
-        //Player has changed biome or world
         PlayerData playerData = playerDataManager.getPlayerData(uuid);
-        String playerName = player.getName();
-        if (configManager.isDebugMode())
-            Utils.debugMsg(playerName, ChatColor.BLUE + "Changed biome: " + previousBiome.name() + " -> " + newBiome.name());
 
-        if (playerData.hasActiveRewards()) {
-            playerData.clearActiveRewards();
-            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDSDEACTIVATED, previousBiome.name())));
-        }
-
-        if (configManager.isEnabledWorld(previousWorld) && (configManager.isEnabledBiome(previousBiome))) {
-            if (configManager.isDebugMode())
-                Utils.debugMsg(playerName, ChatColor.BLUE + "Previous biome (" + previousBiome.name() + ") is enabled, progress saved");
-            setBiomeProgress(playerData, previousBiome);
-        }
-
-        if (configManager.isEnabledWorld(newWorld) && (configManager.isEnabledBiome(newBiome))) {
-            if (configManager.isDebugMode())
-                Utils.debugMsg(playerName, ChatColor.BLUE + "New biome (" + newBiome.name() + ") is enabled, progress started");
-            setBiomeStart(playerData, newBiome);
-        }
+        if (playerData.hasActiveRewards()) clearActiveRewards(player, previousBiome);
+        if (isLocEnabled(previousWorld, previousBiome)) setBiomeProgress(playerData, previousBiome);
+        if (isLocEnabled(newWorld, newBiome)) setBiomeStart(playerData, newBiome);
     }
 
     @EventHandler
@@ -157,7 +169,7 @@ public class PlayerListener implements Listener {
             UUID uuid = player.getUniqueId();
             Location newLoc = event.getTo();
             if (!prevLocMap.containsKey(uuid)) prevLocMap.put(uuid, newLoc);
-            biomeChange(player, newLoc);
+            processBiomeChange(player, newLoc);
         }
     }
 
@@ -166,7 +178,7 @@ public class PlayerListener implements Listener {
 
         if (previousBiomeLevel.isMaxLevel()) return;
 
-        previousBiomeLevel.updateProgress();
+        previousBiomeLevel.updateProgress(previousBiome);
         previousBiomeLevel.clearEntryTime();
     }
 
@@ -181,8 +193,6 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-        World currentWorld = player.getWorld();
-        Biome currentBiome = player.getLocation().getBlock().getBiome();
         PlayerData playerData = playerDataManager.getPlayerData(uuid);
 
         if (playerData == null) {
@@ -192,6 +202,8 @@ public class PlayerListener implements Listener {
 
         if (playerData.hasActiveRewards()) playerData.clearActiveRewards();
 
+        World currentWorld = player.getWorld();
+        Biome currentBiome = player.getLocation().getBlock().getBiome();
         if (configManager.isEnabledWorld(currentWorld))
             if (configManager.isEnabledBiome(currentBiome)) setBiomeProgress(playerData, currentBiome);
 
@@ -200,32 +212,4 @@ public class PlayerListener implements Listener {
         playerDataManager.remove(uuid);
         prevLocMap.remove(uuid);
     }
-
-    @EventHandler
-    public void onLevelUp(LevelUpEvent event) {
-        OfflinePlayer offlinePlayer = event.getOfflinePlayer();
-        BiomeLevel biomeLevel = event.getBiomeLevel();
-        Reward reward = biomeLevel.getReward(event.getNewLevel());
-
-        if (!offlinePlayer.isOnline()) {
-            if (!reward.isTemporary()) return;
-            if (configManager.isDebugMode()) Utils.debugMsg(offlinePlayer.getName(), "&eAdded Pending Reward");
-            pendingRewardsManager.add(offlinePlayer.getUniqueId(), new PendingReward(event.getNewLevel(), biomeLevel.getBiome(), reward));
-            return;
-        }
-
-        Player player = offlinePlayer.getPlayer();
-        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.LEVELLEDUP, event.getNewLevel(), biomeLevel.getBiome())));
-
-        if (!reward.isTemporary()) {
-            Biome playerLocation = player.getLocation().getBlock().getBiome();
-            if (!playerLocation.name().equalsIgnoreCase(biomeLevel.getBiome())) {
-                player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.NOTINBIOME,biomeLevel.getBiome(), reward.toString())));
-                return;
-            }
-        }
-
-        reward.give(player);
-    }
-
 }

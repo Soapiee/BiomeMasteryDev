@@ -30,6 +30,7 @@ public class EffectsListener implements Listener {
     public HashSet<UUID> getSet(EffectType type) {
         return activeEffects.get(type);
     }
+
     public boolean hasActiveEffect(EffectType type, UUID uuid) {
         if (!activeEffects.containsKey(type)) {
             activeEffects.put(type, new HashSet<>());
@@ -38,9 +39,11 @@ public class EffectsListener implements Listener {
 
         return activeEffects.get(type).contains(uuid);
     }
+
     public void addActiveEffect(EffectType type, UUID uuid) {
         getSet(type).add(uuid);
     }
+
     public void removeActiveEffect(EffectType type, UUID uuid) {
         getSet(type).remove(uuid);
     }
@@ -51,7 +54,7 @@ public class EffectsListener implements Listener {
         UUID uuid = player.getUniqueId();
 
         //TODO: Test compatibility with AE
-        if (hasActiveEffect(EffectType.WATERSWIMMER, uuid)) waterSwimmer(player);
+        if (hasActiveEffect(EffectType.SPEEDSWIMMER, uuid)) waterSwimmer(player);
         if (hasActiveEffect(EffectType.LAVASWIMMER, uuid)) lavaSwimmer(player, event.getTo(), event.getFrom());
     }
 

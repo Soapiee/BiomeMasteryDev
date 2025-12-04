@@ -7,20 +7,26 @@ import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.hooks.PlaceHolderAPIHook;
 import me.soapiee.common.hooks.VaultHook;
 import me.soapiee.common.listeners.EffectsListener;
+import me.soapiee.common.listeners.LevelUpListener;
 import me.soapiee.common.listeners.PlayerListener;
 import me.soapiee.common.listeners.PotionRemovalListener;
-import me.soapiee.common.manager.*;
+import me.soapiee.common.manager.DataManager;
+import me.soapiee.common.manager.MessageManager;
+import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.PlayerCache;
 import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.JavaPluginLoader;
 
+import java.io.File;
 import java.io.IOException;
 
-public final class BiomeMastery extends JavaPlugin {
+public class BiomeMastery extends JavaPlugin {
 
     @Getter private DataManager dataManager;
     @Getter private MessageManager messageManager;
@@ -29,6 +35,15 @@ public final class BiomeMastery extends JavaPlugin {
     @Getter private Logger customLogger;
     @Getter private EffectsListener effectsListener;
 
+    public BiomeMastery() {
+        super();
+    }
+
+    //Used for MockedBukkit
+    public BiomeMastery(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
+        super(loader, description, dataFolder, file);
+    }
+
     @Override
     public void onEnable() {
         saveDefaultConfig();
@@ -36,8 +51,17 @@ public final class BiomeMastery extends JavaPlugin {
         playerCache = new PlayerCache(Bukkit.getServer().getOfflinePlayers());
         customLogger = new Logger(this);
         messageManager = new MessageManager(this);
-        effectsListener = new EffectsListener(this);
-        getServer().getPluginManager().registerEvents(effectsListener, this);
+
+        // Data setup
+        dataManager = new DataManager(this);
+
+        try {
+            dataManager.initialise(this);
+        } catch (IOException e) {
+            customLogger.logToFile(e, ChatColor.RED + "There was an error creating/retrieving player data. Disabling plugin..");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         // Hooks
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
@@ -52,32 +76,28 @@ public final class BiomeMastery extends JavaPlugin {
             Utils.consoleMsg(ChatColor.RED + "Error hooking into Vault");
         }
 
-        // Data setup
-        boolean debugMode = getConfig().getBoolean("debug_mode", false);
-        dataManager = new DataManager(this, debugMode);
+        effectsListener = new EffectsListener(this);
+        getServer().getPluginManager().registerEvents(effectsListener, this);
 
-        try {
-            dataManager.initialise(this);
-        } catch (IOException e) {
-            customLogger.logToFile(e, ChatColor.RED + "There was an error creating/retrieving player data. Disabling plugin..");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
-
+        dataManager.initialiseRewards(this);
+        dataManager.initialiseBiomeData(getConfig());
         dataManager.startChecker(this);
+
+        // Listeners setup
+        PlayerListener playerListener = new PlayerListener(this, dataManager);
+        getServer().getPluginManager().registerEvents(playerListener, this);
+        PotionRemovalListener potionRemovalListener = new PotionRemovalListener(dataManager.getPlayerDataManager());
+        getServer().getPluginManager().registerEvents(potionRemovalListener, this);
+        LevelUpListener levelUpListener = new LevelUpListener(messageManager, customLogger, dataManager);
+        getServer().getPluginManager().registerEvents(levelUpListener, this);
 
         // Commands setup
         getCommand("abiomemastery").setExecutor(new AdminCmd(this));
         getCommand("biomemastery").setExecutor(new UsageCmd(this));
 
-        // Listeners setup
-        PlayerListener playerListener = new PlayerListener(this);
-        getServer().getPluginManager().registerEvents(playerListener, this);
-        PotionRemovalListener potionRemovalListener = new PotionRemovalListener(dataManager.getPlayerDataManager());
-        getServer().getPluginManager().registerEvents(potionRemovalListener, this);
-
         // Updater notification setup
         // TODO: Enable later
+        // Updater notification setup
 //        updateChecker = new UpdateChecker(this, 125077);
 //        updateChecker.updateAlert(Bukkit.getConsoleSender());
     }
