@@ -95,6 +95,7 @@ public class BiomeMastery extends JavaPlugin {
         getCommand("abiomemastery").setExecutor(new AdminCmd(this));
         getCommand("biomemastery").setExecutor(new UsageCmd(this));
 
+        // Updater notification setup
         // TODO: Enable later
         // Updater notification setup
 //        updateChecker = new UpdateChecker(this, 125077);
