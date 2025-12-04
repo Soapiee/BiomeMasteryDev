@@ -19,33 +19,33 @@ import java.sql.SQLException;
 
 public class DataManager {
 
-    @Getter private final ConfigManager configManager;
-    @Getter private final BiomeDataManager biomeDataManager;
     @Getter private final PlayerDataManager playerDataManager;
-    @Getter private final EffectsManager effectsManager;
-    @Getter private PendingRewardsManager pendingRewardsManager;
-    @Getter private CommandCooldownManager cooldownManager;
+    @Getter private final PendingRewardsManager pendingRewardsManager;
+    @Getter private final CmdCooldownManager cooldownManager;
+    @Getter private ConfigManager configManager;
+    @Getter private BiomeDataManager biomeDataManager;
+    @Getter private EffectsManager effectsManager;
+    @Getter private RewardFactory rewardFactory;
     @Getter private HikariCPConnection database;
 
     private ProgressChecker progressChecker;
 
-    public DataManager(BiomeMastery main, boolean debugMode) {
+    public DataManager(BiomeMastery main) {
         FileConfiguration mainConfig = main.getConfig();
         Logger logger = main.getCustomLogger();
 
         playerDataManager = new PlayerDataManager();
-        effectsManager = new EffectsManager(main);
-        RewardFactory rewardFactory = new RewardFactory(main, playerDataManager, effectsManager);
-        configManager = new ConfigManager(mainConfig, rewardFactory, logger);
-        biomeDataManager = new BiomeDataManager(configManager, rewardFactory, mainConfig, debugMode);
-        cooldownManager = new CommandCooldownManager(main, mainConfig.getInt("settings.command_cooldown", 3));
+        configManager = new ConfigManager(mainConfig, logger);
+        cooldownManager = new CmdCooldownManager(main, mainConfig.getInt("settings.command_cooldown", 3));
         pendingRewardsManager = new PendingRewardsManager(main, biomeDataManager);
     }
 
     public void initialise(BiomeMastery main) throws IOException {
+        FileConfiguration mainConfig = main.getConfig();
+
         if (configManager.isDatabaseEnabled()) {
             try {
-                initialiseDatabase(main.getConfig());
+                initialiseDatabase(mainConfig);
                 Utils.consoleMsg(ChatColor.DARK_GREEN + "Database enabled.");
             } catch (SQLException | HikariPool.PoolInitializationException e) {
                 main.getCustomLogger().logToFile(e, ChatColor.RED + "Database could not connect. Switching to file storage");
@@ -70,6 +70,16 @@ public class DataManager {
         Utils.consoleMsg(ChatColor.DARK_GREEN + "File Storage enabled.");
     }
 
+    public void initialiseRewards(BiomeMastery main) {
+        effectsManager = new EffectsManager(main);
+        rewardFactory = new RewardFactory(main, playerDataManager, effectsManager);
+        configManager.setUpDefaultRewards(rewardFactory);
+    }
+
+    public void initialiseBiomeData(FileConfiguration mainConfig) {
+        biomeDataManager = new BiomeDataManager(configManager, rewardFactory, mainConfig);
+    }
+
     public void reloadData(BiomeMastery main, DataManager dataManager) {
         configManager.reload(main, dataManager);
         startChecker(main);
@@ -82,7 +92,7 @@ public class DataManager {
             } catch (IllegalStateException ignored) {
             }
 
-        progressChecker = new ProgressChecker(main);
+        progressChecker = new ProgressChecker(main, this);
     }
 
     public void saveAll(){

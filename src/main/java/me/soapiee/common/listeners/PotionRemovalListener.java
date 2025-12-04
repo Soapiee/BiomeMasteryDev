@@ -4,8 +4,6 @@ import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.types.PotionReward;
 import me.soapiee.common.manager.PlayerDataManager;
-import me.soapiee.common.util.Utils;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,7 +26,6 @@ public class PotionRemovalListener implements Listener {
     public void onHeal(PlayerCommandPreprocessEvent event){
         String cmd = event.getMessage();
         if (!cmd.equalsIgnoreCase("/heal")) return;
-        Utils.consoleMsg(ChatColor.RED + cmd);
 
         UUID uuid = event.getPlayer().getUniqueId();
         PlayerData playerData = playerDataManager.getPlayerData(uuid);
@@ -40,8 +37,6 @@ public class PotionRemovalListener implements Listener {
     @EventHandler
     public void onConsumeMilk(PlayerItemConsumeEvent event){
         if (event.getItem().getType() != Material.MILK_BUCKET) return;
-
-        Utils.consoleMsg(ChatColor.RED + "Player drank a milk bucket");
 
         UUID uuid = event.getPlayer().getUniqueId();
         PlayerData playerData = playerDataManager.getPlayerData(uuid);
@@ -73,7 +68,6 @@ public class PotionRemovalListener implements Listener {
 
         for (Reward reward : activeRewards){
             if (reward instanceof PotionReward){
-                Utils.consoleMsg(ChatColor.RED + "Active Reward removed");
                 playerData.clearActiveReward(reward);
             }
         }

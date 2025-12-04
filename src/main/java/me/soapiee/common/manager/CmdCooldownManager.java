@@ -15,7 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.UUID;
 
-public class CommandCooldownManager {
+public class CmdCooldownManager {
 
     private final Logger customLogger;
     private final File file;
@@ -24,7 +24,7 @@ public class CommandCooldownManager {
     private final HashMap<UUID, LocalDateTime> cooldowns;
     private int threshold;
 
-    public CommandCooldownManager(BiomeMastery main, int threshold) {
+    public CmdCooldownManager(BiomeMastery main, int threshold) {
         customLogger = main.getCustomLogger();
         file = new File(main.getDataFolder() + File.separator + "Data", "cooldowns.yml");
         contents = new YamlConfiguration();
