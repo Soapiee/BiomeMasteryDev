@@ -8,13 +8,10 @@ import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
 import me.soapiee.common.util.Utils;
 import org.bukkit.ChatColor;
-import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MessageManager {
 
@@ -106,22 +103,22 @@ public class MessageManager {
         }
     }
 
-//    public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel) {
-//        String formattedBiomeName = Utils.capitalise(biomeData.getBiomeName());
-//        int currentLevel = biomeLevel.getLevel();
-//        String formattedTarget = Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
-//        String formattedProgress = Utils.formatTargetDuration(biomeLevel.getProgress());
-//
-//        String message = get(messageEnum);
-//        if (message == null) return null;
-//
-//        return message.replace("%biome%", formattedBiomeName)
-//                .replace("%player_name%", playerName)
-//                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
-//                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
-//                .replace("%player_progress%", formattedProgress)
-//                .replace("%target_duration_formatted%", formattedTarget);
-//    }
+    public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel) {
+        String formattedBiomeName = Utils.capitalise(biomeData.getBiomeName());
+        int currentLevel = biomeLevel.getLevel();
+        String formattedTarget = Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
+        String formattedProgress = Utils.formatTargetDuration(biomeLevel.getProgress());
+
+        String message = get(messageEnum);
+        if (message == null) return null;
+
+        return message.replace("%biome%", formattedBiomeName)
+                .replace("%player_name%", playerName)
+                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
+                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
+                .replace("%player_progress%", formattedProgress)
+                .replace("%target_duration_formatted%", formattedTarget);
+    }
 
     public String getWithPlaceholder(Message messageEnum, String string) {
         String message = get(messageEnum);
@@ -185,58 +182,6 @@ public class MessageManager {
                 .replace("%progress%", Utils.formatTargetDuration(integer))
                 .replace("%biome%", biomeName)
                 .replace("%player_name%", playerName);
-    }
-
-
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-
-    private String formattedTarget(BiomeData biomeData, BiomeLevel biomeLevel){
-        int currentLevel = biomeLevel.getLevel();
-        return Utils.formatTargetDuration(biomeData.getTargetDuration(currentLevel));
-    }
-    private String formattedProgress(BiomeLevel biomeLevel){ return Utils.formatTargetDuration(biomeLevel.getProgress()); }
-    private String formattedBiomeName(BiomeData biomeData){
-        return Utils.capitalise(biomeData.getBiomeName());
-    }
-    private String formattedBiomesList(BiomeData biomeData, List<Biome> biomesList){
-        //Add the parent biome to the list
-        ArrayList<Biome> copyList = new ArrayList<>(biomesList);
-        copyList.add(biomeData.getBiome());
-
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < copyList.size(); i++) {
-            if (i != 0) builder.append(", ");
-            String name = copyList.get(i).name();
-            builder.append(Utils.capitalise(name));
-        }
-
-        return builder.toString();
-    }
-
-    public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel) {
-        String message = get(messageEnum);
-        if (message == null) return null;
-
-        return message.replace("%biome%", formattedBiomeName(biomeData))
-                .replace("%player_name%", playerName)
-                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
-                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
-                .replace("%player_progress%", formattedProgress(biomeLevel))
-                .replace("%target_duration_formatted%", formattedTarget(biomeData, biomeLevel));
-    }
-
-    public String getWithPlaceholder(Message messageEnum, String playerName, BiomeData biomeData, BiomeLevel biomeLevel, List<Biome> groupedBiomes) {
-        String message = get(messageEnum);
-        if (message == null) return null;
-
-        return message.replace("%biome%", formattedBiomeName(biomeData))
-                .replace("%player_name%", playerName)
-                .replace("%grouped_biomes%", formattedBiomesList(biomeData, groupedBiomes))
-                .replace("%player_level%", String.valueOf(biomeLevel.getLevel()))
-                .replace("%biome_max_level%", String.valueOf(biomeData.getMaxLevel()))
-                .replace("%player_progress%", formattedProgress(biomeLevel))
-                .replace("%target_duration_formatted%", formattedTarget(biomeData, biomeLevel));
     }
 
 }

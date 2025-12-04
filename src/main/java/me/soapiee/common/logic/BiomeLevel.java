@@ -41,11 +41,11 @@ public class BiomeLevel {
         entryTime = null;
     }
 
-    public void updateProgress(Biome playerLocParentBiome) {
+    public void updateProgress(Biome playerBiome) {
         synchronized (lock) {
             if (isMaxLevel()) return;
             if (getEntryTime() == null) return;
-            if (!playerLocParentBiome.name().equalsIgnoreCase(getBiome().name())) return;
+            if (!playerBiome.name().equalsIgnoreCase(getBiome().name())) return;
 
             long toAdd = ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
             entryTime = LocalDateTime.now();

@@ -17,7 +17,7 @@ class BiomeLevelTest {
     @BeforeEach
     void beforeEach() {
         OfflinePlayer mockPlayer = mock(OfflinePlayer.class);
-        BiomeData mockBiomeData = mock(SingularData.class);
+        BiomeData mockBiomeData = mock(BiomeData.class);
         biomeLevel = new BiomeLevel(mockPlayer, mockBiomeData);
 
         when(mockBiomeData.getMaxLevel()).thenReturn(5);

@@ -7,25 +7,23 @@ import me.soapiee.common.logic.effects.Effect;
 import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.RewardFactory;
 import me.soapiee.common.util.Logger;
-import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class ConfigManager {
 
     private FileConfiguration config;
     private final Logger logger;
 
-    @Getter
-    @Setter
-    private boolean databaseEnabled;
+    @Getter @Setter private boolean databaseEnabled;
     @Getter private boolean debugMode;
     @Getter private boolean updateNotif;
     @Getter private final HashSet<World> enabledWorlds = new HashSet<>();
@@ -34,10 +32,6 @@ public class ConfigManager {
     @Getter private final HashMap<Integer, Reward> defaultRewards = new HashMap<>();
     @Getter private final HashMap<String, Effect> effects = new HashMap<>();
     @Getter private int updateInterval;
-
-    @Getter private final boolean biomesGrouped;
-    @Getter private final HashMap<Biome, ArrayList<Biome>> parentAndChildrenMap = new HashMap<>();
-    @Getter private final Map<String, Biome> groupNameAndParentMap = new ConcurrentHashMap<>();
 
     public ConfigManager(FileConfiguration config, Logger logger) {
         this.config = config;
@@ -49,8 +43,6 @@ public class ConfigManager {
 
         enabledWorlds.addAll(setUpEnabledWords());
         enabledBiomes.addAll(setUpEnabledBiomes());
-        biomesGrouped = validateBiomeGroups();
-        if (biomesGrouped) createGroupBiomes();
     }
 
     public ArrayList<World> setUpEnabledWords() {
@@ -141,92 +133,92 @@ public class ConfigManager {
 
 //    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
 
-    private boolean validateBiomeGroups() {
-        ConfigurationSection groups = config.getConfigurationSection("groups");
-
-        if (groups == null || groups.getKeys(false).isEmpty()) {
-            if (debugMode) Utils.debugMsg("", ChatColor.RED + "No biome groups set");
-            return false;
-        }
-
-        ArrayList<Biome> groupBiomes = rawGroupBiomes();
-//        if (!checkDuplicates(groupBiomes)) return false;
-        return checkDuplicates(groupBiomes) && checkEnabled(groupBiomes);
-    }
-
-    private ArrayList<Biome> rawGroupBiomes() {
-        ArrayList<Biome> groupBiomes = new ArrayList<>();
-        for (String groupName : config.getConfigurationSection("groups").getKeys(false)) {
-            for (String biomeName : config.getStringList("groups." + groupName)) {
-                Biome biome = validateBiome(biomeName);
-                if (biome == null) {
-                    logger.logToFile(null, "&c'" + biomeName + "' is not a valid biome");
-                    continue;
-                }
-
-                groupBiomes.add(biome);
-            }
-        }
-
-        return groupBiomes;
-    }
-
-    private boolean checkDuplicates(ArrayList<Biome> groupBiomes) {
-        //Check there are no duplicate biomes in the biome groups config section
-        HashSet<Biome> duplicates = new HashSet<>();
-        for (Biome biome : groupBiomes) {
-            if (duplicates.contains(biome)) {
-                logger.logToFile(null, "&c'" + biome.name() + "' biome appears more than once, in the group lists. \nA biome cannot be in more than one group");
-                return false;
-            }
-
-            duplicates.add(biome);
-        }
-
-        return true;
-    }
-
-    private boolean checkEnabled(ArrayList<Biome> groupBiomes) {
-        //Check all the parent and child biomes are enabled biomes
-        for (Biome biome : groupBiomes) {
-            if (!enabledBiomes.contains(biome)) {
-                logger.logToFile(null, "&c'" + biome.name() + "' is not an enabled biome, so it cannot be in a group");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void createGroupBiomes() {
-        for (String groupName : config.getConfigurationSection("groups").getKeys(false)) {
-            List<String> biomeList = config.getStringList("groups." + groupName);
-
-            Biome parentBiome = validateBiome(biomeList.get(0));
-            if (parentBiome == null) continue;
-
-            ArrayList<Biome> childList = new ArrayList<>();
-            for (int i = 1; i < biomeList.size(); i++) {
-                Biome childBiome = validateBiome(biomeList.get(i));
-                if (childBiome == null) continue;
-
-                childList.add(childBiome);
-            }
-
-            if (childList.isEmpty()) continue;
-            parentAndChildrenMap.put(parentBiome, childList);
-            groupNameAndParentMap.put(groupName, parentBiome);
-        }
-    }
-
-    public ArrayList<Biome> getChildren(Biome biome) {
-        if (parentAndChildrenMap.containsKey(biome)) return parentAndChildrenMap.get(biome);
-
-        for (Biome parentBiome : parentAndChildrenMap.keySet()) {
-            if (parentAndChildrenMap.get(parentBiome).contains(biome)) {
-                return parentAndChildrenMap.get(parentBiome);
-            }
-        }
-
-        return null;
-    }
+//    private boolean validateBiomeGroups() {
+//        ConfigurationSection groups = config.getConfigurationSection("groups");
+//
+//        if (groups == null || groups.getKeys(false).isEmpty()) {
+//            if (debugMode) Utils.debugMsg("", ChatColor.RED + "No biome groups set");
+//            return false;
+//        }
+//
+//        ArrayList<Biome> groupBiomes = rawGroupBiomes();
+////        if (!checkDuplicates(groupBiomes)) return false;
+//        return checkDuplicates(groupBiomes) && checkEnabled(groupBiomes);
+//    }
+//
+//    private ArrayList<Biome> rawGroupBiomes() {
+//        ArrayList<Biome> groupBiomes = new ArrayList<>();
+//        for (String groupName : config.getConfigurationSection("groups").getKeys(false)) {
+//            for (String biomeName : config.getStringList("groups." + groupName)) {
+//                Biome biome = validateBiome(biomeName);
+//                if (biome == null) {
+//                    logger.logToFile(null, "&c'" + biomeName + "' is not a valid biome");
+//                    continue;
+//                }
+//
+//                groupBiomes.add(biome);
+//            }
+//        }
+//
+//        return groupBiomes;
+//    }
+//
+//    private boolean checkDuplicates(ArrayList<Biome> groupBiomes) {
+//        //Check there are no duplicate biomes in the biome groups config section
+//        HashSet<Biome> duplicates = new HashSet<>();
+//        for (Biome biome : groupBiomes) {
+//            if (duplicates.contains(biome)) {
+//                logger.logToFile(null, "&c'" + biome.name() + "' biome appears more than once, in the group lists. \nA biome cannot be in more than one group");
+//                return false;
+//            }
+//
+//            duplicates.add(biome);
+//        }
+//
+//        return true;
+//    }
+//
+//    private boolean checkEnabled(ArrayList<Biome> groupBiomes) {
+//        //Check all the parent and child biomes are enabled biomes
+//        for (Biome biome : groupBiomes) {
+//            if (!enabledBiomes.contains(biome)) {
+//                logger.logToFile(null, "&c'" + biome.name() + "' is not an enabled biome, so it cannot be in a group");
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+//
+//    private void createGroupBiomes() {
+//        for (String groupName : config.getConfigurationSection("groups").getKeys(false)) {
+//            List<String> biomeList = config.getStringList("groups." + groupName);
+//
+//            Biome parentBiome = validateBiome(biomeList.get(0));
+//            if (parentBiome == null) continue;
+//
+//            ArrayList<Biome> childList = new ArrayList<>();
+//            for (int i = 1; i < biomeList.size(); i++) {
+//                Biome childBiome = validateBiome(biomeList.get(i));
+//                if (childBiome == null) continue;
+//
+//                childList.add(childBiome);
+//            }
+//
+//            if (childList.isEmpty()) continue;
+//            parentAndChildrenMap.put(parentBiome, childList);
+//            groupNameAndParentMap.put(groupName, parentBiome);
+//        }
+//    }
+//
+//    public ArrayList<Biome> getChildren(Biome biome) {
+//        if (parentAndChildrenMap.containsKey(biome)) return parentAndChildrenMap.get(biome);
+//
+//        for (Biome parentBiome : parentAndChildrenMap.keySet()) {
+//            if (parentAndChildrenMap.get(parentBiome).contains(biome)) {
+//                return parentAndChildrenMap.get(parentBiome);
+//            }
+//        }
+//
+//        return null;
+//    }
 }

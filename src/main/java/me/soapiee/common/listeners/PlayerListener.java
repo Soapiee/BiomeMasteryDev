@@ -2,9 +2,7 @@ package me.soapiee.common.listeners;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.PlayerData;
-import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.SingularData;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.Message;
@@ -26,7 +24,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -121,12 +118,12 @@ public class PlayerListener implements Listener {
         return previousWorld != newWorld;
     }
 
-//    public boolean biomeHasChanged(Biome previousBiome, Biome newBiome) {
-//        if (previousBiome == newBiome) return false;
-//        return !previousBiome.name().equalsIgnoreCase(newBiome.name());
-//    }
+    public boolean biomeHasChanged(Biome previousBiome, Biome newBiome) {
+        if (previousBiome == newBiome) return false;
+        return !previousBiome.name().equalsIgnoreCase(newBiome.name());
+    }
 
-    public boolean hasLocationChanged(World prevWorld, World newWorld, Biome prevBiome, Biome newBiome) {
+    public boolean locationHasChanged(World prevWorld, World newWorld, Biome prevBiome, Biome newBiome) {
         if (worldHasChanged(prevWorld, newWorld)) return true;
         return (biomeHasChanged(prevBiome, newBiome));
     }
@@ -151,7 +148,7 @@ public class PlayerListener implements Listener {
         World newWorld = newLoc.getWorld();
         Biome newBiome = newLoc.getBlock().getBiome();
 
-        if (!hasLocationChanged(previousWorld, newWorld, previousBiome, newBiome)) return;
+        if (!locationHasChanged(previousWorld, newWorld, previousBiome, newBiome)) return;
         prevLocMap.put(uuid, newLoc);
 
         PlayerData playerData = playerDataManager.getPlayerData(uuid);
@@ -181,8 +178,7 @@ public class PlayerListener implements Listener {
 
         if (previousBiomeLevel.isMaxLevel()) return;
 
-        Biome previousBiomeParent = biomeDataManager.getBiomeData(previousBiome).getBiome();
-        previousBiomeLevel.updateProgress(previousBiomeParent);
+        previousBiomeLevel.updateProgress(previousBiome);
         previousBiomeLevel.clearEntryTime();
     }
 
@@ -215,26 +211,5 @@ public class PlayerListener implements Listener {
 
         playerDataManager.remove(uuid);
         prevLocMap.remove(uuid);
-    }
-
-
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-
-
-    public boolean biomeHasChanged(Biome previousBiome, Biome newBiome) {
-        if (previousBiome == newBiome) return false;
-
-        //check if previousBiome biomeData is singular
-        BiomeData biomeData = biomeDataManager.getBiomeData(previousBiome);
-
-        if (biomeData == null || biomeData instanceof SingularData) {
-            return !previousBiome.name().equalsIgnoreCase(newBiome.name());
-        }
-
-        ArrayList<Biome> groupList = configManager.getChildren(previousBiome);
-        groupList.add(biomeData.getBiome());
-
-        return !groupList.contains(newBiome);
-
     }
 }

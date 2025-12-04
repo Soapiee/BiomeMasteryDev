@@ -4,7 +4,6 @@ import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.data.PlayerData;
 import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
-import me.soapiee.common.logic.ChildData;
 import me.soapiee.common.logic.effects.Effect;
 import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.logic.rewards.types.EffectReward;
@@ -188,21 +187,21 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         return target;
     }
 
-//    private Biome getBiome(CommandSender sender, String value) {
-//        Biome biome;
-//        try {
-//            biome = Biome.valueOf(value);
-//        } catch (IllegalArgumentException error) {
-//            return null;
-//        }
-//
-//        if (!configManager.isEnabledBiome(biome)) {
-//            sendMessage(sender, messageManager.getWithPlaceholder(Message.BIOMEINFODISABLED, value));
-//            return null;
-//        }
-//
-//        return biome;
-//    }
+    private Biome getBiome(CommandSender sender, String value) {
+        Biome biome;
+        try {
+            biome = Biome.valueOf(value);
+        } catch (IllegalArgumentException error) {
+            return null;
+        }
+
+        if (!configManager.isEnabledBiome(biome)) {
+            sendMessage(sender, messageManager.getWithPlaceholder(Message.BIOMEINFODISABLED, value));
+            return null;
+        }
+
+        return biome;
+    }
 
     private void updateProgress(OfflinePlayer target) {
         // if player is online, get their location, and update that biomelevel
@@ -212,9 +211,8 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         Biome locBiome = onlinePlayer.getLocation().getBlock().getBiome();
         if (!configManager.isEnabledBiome(locBiome)) return;
 
-        Biome parentBiome = biomeDataManager.getBiomeData(locBiome).getBiome();
         BiomeLevel biomeLevel = playerDataManager.getPlayerData(onlinePlayer.getUniqueId()).getBiomeLevel(locBiome);
-        biomeLevel.updateProgress(parentBiome);
+        biomeLevel.updateProgress(locBiome);
     }
 
     private void toggleReward(Player player, Biome biome, String value) {
@@ -312,75 +310,75 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
         return player.hasPermission(permission);
     }
 
-//    private void displayInfo(CommandSender sender, OfflinePlayer target) {
-//        int cooldown = (int) cooldownManager.getCooldown(sender);
-//        if (cooldown > 0) {
-//            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
-//            return;
-//        }
-//
-//        updateProgress(target);
-//        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
-//        StringBuilder builder = new StringBuilder();
-//
-//        builder.append(messageManager.getWithPlaceholder(Message.BIOMEBASICINFOHEADER, target.getName())).append("\n");
-//
-//        int i = 0;
-//
-//        for (Biome biome : configManager.getEnabledBiomes()) {
-//            BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
-//            BiomeData biomeData = biomeDataManager.getBiomeData(biome);
-//
-//            if (i > 0 && i % 3 != 0) {
-//                builder.append(" ")
-//                        .append(messageManager.get(Message.BIOMEBASICINFOSEPERATOR))
-//                        .append(" ");
-//            }
-//            i++;
-//
-//            Message message = Message.BIOMEBASICINFOFORMAT;
-//            if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEBASICINFOMAX;
-//
-//            builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
-//
-//            if (i % 3 == 0) builder.append("\n");
-//        }
-//
-//        cooldownManager.addCooldown(sender);
-//        sendMessage(sender, builder.toString());
-//    }
+    private void displayInfo(CommandSender sender, OfflinePlayer target) {
+        int cooldown = (int) cooldownManager.getCooldown(sender);
+        if (cooldown > 0) {
+            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
+            return;
+        }
 
-//    private void displayBiomeInfo(CommandSender sender, OfflinePlayer target, Biome biome) {
-//        int cooldown = (int) cooldownManager.getCooldown(sender);
-//        if (cooldown > 0) {
-//            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
-//            return;
-//        }
-//
-//        updateProgress(target);
-//        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
-//        BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
-//        BiomeData biomeData = biomeDataManager.getBiomeData(biome);
-//        StringBuilder builder = new StringBuilder();
-//
-//        Message message = Message.BIOMEDETAILEDFORMAT;
-//        if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEDETAILEDMAX;
-//
-//        builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
-//
-//        for (int i = 1; i <= biomeData.getMaxLevel(); i++) {
-//            Reward reward = biomeData.getReward(i);
-//
-//            builder.append("\n")
-//                    .append(messageManager.getWithPlaceholder(Message.BIOMEREWARDFORMAT,
-//                            i,
-//                            reward,
-//                            getRewardStatus(target, biomeData, i, biomeLevel.getLevel())));
-//        }
-//
-//        cooldownManager.addCooldown(sender);
-//        sendMessage(sender, builder.toString());
-//    }
+        updateProgress(target);
+        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(messageManager.getWithPlaceholder(Message.BIOMEBASICINFOHEADER, target.getName())).append("\n");
+
+        int i = 0;
+
+        for (Biome biome : configManager.getEnabledBiomes()) {
+            BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
+            BiomeData biomeData = biomeDataManager.getBiomeData(biome);
+
+            if (i > 0 && i % 3 != 0) {
+                builder.append(" ")
+                        .append(messageManager.get(Message.BIOMEBASICINFOSEPERATOR))
+                        .append(" ");
+            }
+            i++;
+
+            Message message = Message.BIOMEBASICINFOFORMAT;
+            if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEBASICINFOMAX;
+
+            builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
+
+            if (i % 3 == 0) builder.append("\n");
+        }
+
+        cooldownManager.addCooldown(sender);
+        sendMessage(sender, builder.toString());
+    }
+
+    private void displayBiomeInfo(CommandSender sender, OfflinePlayer target, Biome biome) {
+        int cooldown = (int) cooldownManager.getCooldown(sender);
+        if (cooldown > 0) {
+            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
+            return;
+        }
+
+        updateProgress(target);
+        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
+        BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
+        BiomeData biomeData = biomeDataManager.getBiomeData(biome);
+        StringBuilder builder = new StringBuilder();
+
+        Message message = Message.BIOMEDETAILEDFORMAT;
+        if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEDETAILEDMAX;
+
+        builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
+
+        for (int i = 1; i <= biomeData.getMaxLevel(); i++) {
+            Reward reward = biomeData.getReward(i);
+
+            builder.append("\n")
+                    .append(messageManager.getWithPlaceholder(Message.BIOMEREWARDFORMAT,
+                            i,
+                            reward,
+                            getRewardStatus(target, biomeData, i, biomeLevel.getLevel())));
+        }
+
+        cooldownManager.addCooldown(sender);
+        sendMessage(sender, builder.toString());
+    }
 
     private String getRewardStatus(OfflinePlayer player, BiomeData biomeData, int rewardLevel, int currentLevel) {
         if (currentLevel < rewardLevel) {
@@ -422,110 +420,6 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
     }
 
 
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-
-    private void displayInfo(CommandSender sender, OfflinePlayer target) {
-        int cooldown = (int) cooldownManager.getCooldown(sender);
-        if (cooldown > 0) {
-            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
-            return;
-        }
-
-        updateProgress(target);
-        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(messageManager.getWithPlaceholder(Message.BIOMEBASICINFOHEADER, target.getName())).append("\n");
-
-        int i = 0;
-
-        for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
-            if (biomeData instanceof ChildData) continue;
-
-            Biome biome = biomeData.getBiome();
-            BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
-
-            if (i > 0 && i % 3 != 0) {
-                builder.append(" ")
-                        .append(messageManager.get(Message.BIOMEBASICINFOSEPERATOR))
-                        .append(" ");
-            }
-            i++;
-
-            Message message = Message.BIOMEBASICINFOFORMAT;
-            if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEBASICINFOMAX;
-
-            builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
-
-            if (i % 3 == 0) builder.append("\n");
-        }
-
-        cooldownManager.addCooldown(sender);
-        sendMessage(sender, builder.toString());
-    }
-
-    private void displayBiomeInfo(CommandSender sender, OfflinePlayer target, Biome biome) {
-        int cooldown = (int) cooldownManager.getCooldown(sender);
-        if (cooldown > 0) {
-            sendMessage(sender, messageManager.getWithPlaceholder(Message.CMDONCOOLDOWN, cooldown));
-            return;
-        }
-
-        updateProgress(target);
-        PlayerData playerData = playerDataManager.getPlayerData(target.getUniqueId());
-        BiomeLevel biomeLevel = playerData.getBiomeLevel(biome);
-        BiomeData biomeData = biomeDataManager.getBiomeData(biome);
-        StringBuilder builder = new StringBuilder();
-
-        Message message;
-        ArrayList<Biome> childrenBiomes = configManager.getChildren(biome);
-
-        if (childrenBiomes == null) {
-            message = Message.BIOMEDETAILEDFORMAT;
-            if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEDETAILEDMAX;
-
-            builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel));
-        } else {
-            message = Message.BIOMEDETAILEDFORMATWITHCHILD;
-            if (biomeLevel.getLevel() == biomeData.getMaxLevel()) message = Message.BIOMEDETAILEDMAXWITHCHILD;
-            builder.append(messageManager.getWithPlaceholder(message, target.getName(), biomeData, biomeLevel, childrenBiomes));
-        }
-
-        for (int i = 1; i <= biomeData.getMaxLevel(); i++) {
-            Reward reward = biomeData.getReward(i);
-
-            builder.append("\n")
-                    .append(messageManager.getWithPlaceholder(Message.BIOMEREWARDFORMAT,
-                            i,
-                            reward,
-                            getRewardStatus(target, biomeData, i, biomeLevel.getLevel())));
-        }
-
-        cooldownManager.addCooldown(sender);
-        sendMessage(sender, builder.toString());
-    }
-
-    private Biome getBiome(CommandSender sender, String input) {
-        if (configManager.isBiomesGrouped())
-            if (configManager.getGroupNameAndParentMap().containsKey(input.toLowerCase()))
-                return configManager.getGroupNameAndParentMap().get(input);
-
-        Biome biome;
-        try {
-            biome = Biome.valueOf(input);
-        } catch (IllegalArgumentException error) {
-            return null;
-        }
-
-        if (!configManager.isEnabledBiome(biome)) {
-            sendMessage(sender, messageManager.getWithPlaceholder(Message.BIOMEINFODISABLED, input));
-            return null;
-        }
-
-        return biome;
-    }
-
-
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         final List<String> results = new ArrayList<>();
@@ -540,7 +434,6 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
             case 2:
                 if (args[0].equalsIgnoreCase("help")) break;
                 configManager.getEnabledBiomes().forEach(biome -> results.add(biome.name().toLowerCase()));
-                results.addAll(configManager.getGroupNameAndParentMap().keySet());
 
                 if (!args[0].equalsIgnoreCase("info")) break;
                 playerCache.getOfflinePlayers().forEach(offlinePlayer -> results.add(offlinePlayer.getName()));
