@@ -12,9 +12,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class WaterSwimmerEffect implements Effect {
+public class SpeedSwimmerEffect implements Effect {
 
-    @Getter private final EffectType type = EffectType.WATERSWIMMER;
+    @Getter private final EffectType type = EffectType.SPEEDSWIMMER;
     @Getter private final String identifier;
     @Getter private final List<EffectType> conflicts;
     private final EffectsListener listener;
@@ -24,7 +24,7 @@ public class WaterSwimmerEffect implements Effect {
     private static final double SPEED_DEFAULT = 0.4;
     private static final float DEFAULT_WALK_SPEED = 0.2F;
 
-    public WaterSwimmerEffect(BiomeMastery main, FileConfiguration config) {
+    public SpeedSwimmerEffect(BiomeMastery main, FileConfiguration config) {
         listener = main.getEffectsListener();
         String key = type.name();
         identifier = config.getString(key + ".friendly_name", key);

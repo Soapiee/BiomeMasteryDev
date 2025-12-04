@@ -31,7 +31,7 @@ class ConfigManagerTest {
         // mock BiomeMastery behavior
         when(mockMain.getConfig()).thenReturn(mockConfig);
 
-        configManager = new ConfigManager(mockConfig, mockRewardFactory, mockLogger);
+        configManager = new ConfigManager(mockConfig, mockLogger);
     }
 
     @AfterEach

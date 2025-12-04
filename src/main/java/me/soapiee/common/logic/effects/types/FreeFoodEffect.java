@@ -17,11 +17,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class FoodEffect implements Effect {
+public class FreeFoodEffect implements Effect {
 
     private final BiomeMastery main;
 
-    @Getter private final EffectType type = EffectType.FOODRESTORATION;
+    @Getter private final EffectType type = EffectType.FREEFOOD;
     @Getter private final String identifier;
     @Getter private final List<EffectType> conflicts = new ArrayList<>();
     @Getter private final Map<UUID, BukkitTask> activePlayers = new ConcurrentHashMap<>();
@@ -34,7 +34,7 @@ public class FoodEffect implements Effect {
     private static final int HUNGER_MAX = 20;
     private static final int HUNGER_DEFAULT = 1;
 
-    public FoodEffect(BiomeMastery main, FileConfiguration config) {
+    public FreeFoodEffect(BiomeMastery main, FileConfiguration config) {
         this.main = main;
         String key = type.name();
         identifier = config.getString(key + ".friendly_name", key);

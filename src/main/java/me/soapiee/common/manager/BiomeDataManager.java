@@ -21,41 +21,6 @@ public class BiomeDataManager {
 
     @Getter private final Map<Biome, BiomeData> biomeDataMap = new ConcurrentHashMap<>();
 
-//    public BiomeDataManager(ConfigManager configManager,
-//                            RewardFactory rewardFactory,
-//                            FileConfiguration config,
-//                            boolean isDebugMode) {
-//        this.configManager = configManager;
-//        this.rewardFactory = rewardFactory;
-//        this.config = config;
-//        this.isDebugMode = isDebugMode;
-//        createAllBiomeData();
-//    }
-//
-//    private void createAllBiomeData() {
-//        for (Biome enabledBiome : configManager.getEnabledBiomes()) {
-//            createBiomeData(enabledBiome);
-//        }
-//    }
-//
-//    private void createBiomeData(Biome biome) {
-//        if (isDebugMode) Utils.debugMsg("", "&eEnabled biome: " + biome.name());
-//
-//        BiomeData biomeData = new BiomeData(configManager, rewardFactory, config, biome);
-//        biomeDataMap.put(biome, biomeData);
-//    }
-//
-//    public BiomeData getBiomeData(Biome biome) {
-//        return biomeDataMap.getOrDefault(biome, null);
-//    }
-//
-//    public BiomeData getBiomeData(String biome) throws IllegalArgumentException {
-//        return biomeDataMap.getOrDefault(Biome.valueOf(biome), null);
-//    }
-
-
-//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
-
     public BiomeDataManager(ConfigManager configManager,
                             RewardFactory rewardFactory,
                             FileConfiguration config) {

@@ -120,12 +120,6 @@ public class PlayerListener implements Listener {
     public boolean worldHasChanged(World previousWorld, World newWorld) {
         return previousWorld != newWorld;
     }
-
-//    public boolean biomeHasChanged(Biome previousBiome, Biome newBiome) {
-//        if (previousBiome == newBiome) return false;
-//        return !previousBiome.name().equalsIgnoreCase(newBiome.name());
-//    }
-
     public boolean hasLocationChanged(World prevWorld, World newWorld, Biome prevBiome, Biome newBiome) {
         if (worldHasChanged(prevWorld, newWorld)) return true;
         return (biomeHasChanged(prevBiome, newBiome));
