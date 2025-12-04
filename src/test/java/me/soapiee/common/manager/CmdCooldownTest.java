@@ -1,10 +1,6 @@
-package me.soapiee.common.logic;
+package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
-import me.soapiee.common.manager.CommandCooldownManager;
-import me.soapiee.common.manager.DataManager;
-import me.soapiee.common.manager.MessageManager;
-import me.soapiee.common.manager.PlayerDataManager;
 import me.soapiee.common.util.Logger;
 import org.bukkit.command.ConsoleCommandSender;
 import org.junit.jupiter.api.AfterEach;
@@ -16,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CommandCooldownTest {
+class CmdCooldownTest {
 
-    private CommandCooldownManager mockCooldownManager;
+    private CmdCooldownManager mockCooldownManager;
     private ConsoleCommandSender mockConsole;
 
     @BeforeEach
@@ -35,7 +31,7 @@ class CommandCooldownTest {
         when(mockMain.getDataManager()).thenReturn(mockDataManager);
         when(mockDataManager.getPlayerDataManager()).thenReturn(mockPlayerDataManager);
 
-        mockCooldownManager = new CommandCooldownManager(mockMain, 5);
+        mockCooldownManager = new CmdCooldownManager(mockMain, 5);
     }
 
     @AfterEach

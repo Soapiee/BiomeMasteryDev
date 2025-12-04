@@ -97,7 +97,8 @@ public class RewardFactory {
         EffectType effectType;
 
         try {
-            effectType = EffectType.valueOf(config.getString(path + "reward_item").toUpperCase());
+            String effectString = config.getString(path + "reward_item").toUpperCase();
+            effectType = EffectType.valueOf(effectString.replace("_", ""));
         } catch (IllegalArgumentException error) {
             createLog(path, error, "effect type");
             return new NullReward();

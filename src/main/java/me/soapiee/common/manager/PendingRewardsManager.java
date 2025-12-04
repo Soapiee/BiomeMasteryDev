@@ -1,6 +1,7 @@
 package me.soapiee.common.manager;
 
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.rewards.PendingReward;
 import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Logger;
@@ -115,8 +116,6 @@ public class PendingRewardsManager {
     public void giveAll(@NotNull Player player) {
         UUID uuid = player.getUniqueId();
 
-        if (!has(uuid)) return;
-
         for (PendingReward reward : get(uuid)) {
             reward.getReward().give(player);
             player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(
@@ -131,7 +130,10 @@ public class PendingRewardsManager {
             int level = contents.getInt(uuid + "." + key + ".Level");
             String biome = contents.getString(uuid + "." + key + ".Biome");
 
-            Reward reward = biomeDataManager.getBiomeData(biome).getReward(level);
+            BiomeData biomeData = biomeDataManager.getBiomeData(biome);
+            if (biomeData == null) continue;
+
+            Reward reward = biomeData.getReward(level);
             rewardsList.add(new PendingReward(level, biome, reward));
         }
 

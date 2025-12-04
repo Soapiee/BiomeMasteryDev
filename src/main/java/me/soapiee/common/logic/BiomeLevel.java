@@ -9,7 +9,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Biome;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -42,19 +41,15 @@ public class BiomeLevel {
         entryTime = null;
     }
 
-    public synchronized void updateProgress() {
+    public void updateProgress(Biome playerLocParentBiome) {
         synchronized (lock) {
             if (isMaxLevel()) return;
-
-            Player onlineTarget = player.getPlayer();
-            if (onlineTarget == null) return;
-
             if (getEntryTime() == null) return;
-            Biome playerBiome = onlineTarget.getLocation().getBlock().getBiome();
-            if (!playerBiome.name().equalsIgnoreCase(getBiome())) return;
+            if (!playerLocParentBiome.name().equalsIgnoreCase(getBiome().name())) return;
 
             long toAdd = ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
             entryTime = LocalDateTime.now();
+
             Utils.debugMsg(player.getName(),
                     ChatColor.GREEN.toString() + toAdd + " seconds added to biome " + biomeData.getBiome().name());
 
@@ -113,6 +108,14 @@ public class BiomeLevel {
         }
     }
 
+    public void initialiseProgress(long newProgress) {
+        synchronized (lock) {
+            if (newProgress < 0) newProgress = 0;
+
+            progress = newProgress;
+        }
+    }
+
     public void reset() {
         level = 0;
         progress = 0;
@@ -127,7 +130,11 @@ public class BiomeLevel {
         return biomeData.getReward(level);
     }
 
-    public String getBiome() {
-        return Utils.capitalise(biomeData.getBiome().name());
+    public Biome getBiome() {
+        return biomeData.getBiome();
+    }
+
+    public String getBiomeName() {
+        return Utils.capitalise(biomeData.getBiomeName());
     }
 }

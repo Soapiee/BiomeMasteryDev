@@ -1,4 +1,4 @@
-package me.soapiee.common.data;
+package me.soapiee.common.logic;
 
 import me.soapiee.common.BiomeMastery;
 import me.soapiee.common.hooks.VaultHook;
@@ -90,7 +90,7 @@ class RewardFactoryTest {
     void givenTypeEffect_whencreate_thenReturnEffectReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("effect");
-        when(mockConfig.getString(path + "reward_item")).thenReturn("foodrestoration");
+        when(mockConfig.getString(path + "reward_item")).thenReturn("free_food");
         when(mockConfig.getString(path + "type", "temporary")).thenReturn("temporary");
 
         Reward actualValue = rewardFactory.create(path);

@@ -36,7 +36,7 @@ default_biome_settings:
   # If the above setting is false: List biomes that you DON'T want rewards for
   # If the above setting is true: List biomes that you DO want rewards for
   biomes_blacklist:
-    - DEEP_COLD_OCEAN
+    - PLAINS
 
   # The default settings for each biomes rewards/levels.
   # If the Biome is not specified in the "biomes" section
@@ -100,7 +100,7 @@ biomes:
       type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
       reward_type: effect # Valid types: potion, effect, item, permission, command, experience, currency
-      reward_item: night_vision # Valid effects: water_walker, night_vision
+      reward_item: free_food # Valid effects: speed_swimmer, lava_swimmer, free_food
     '3':
       target_duration: 60 # seconds
       reward_type: item
@@ -116,7 +116,7 @@ biomes:
       type: temporary # Valid types: temporary or permanent (Only needed for potion + effect reward types)
       target_duration: 60 # seconds
       reward_type: effect # Valid types: potion, effect, item, permission, command, experience, currency
-      reward_item: night_vision # Valid effects: water_walker, night_vision
+      reward_item: speed_swimmer # Valid effects: speed_swimmer, lava_swimmer, free_food
     '3':
       target_duration: 60 # seconds
       reward_type: item
@@ -145,7 +145,7 @@ biomes:
       type: temporary
       target_duration: 60
       reward_type: effect
-      reward_item: night_vision
+      reward_item: lava_swimmer
     '3':
       type: temporary
       target_duration: 60
