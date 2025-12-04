@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemFactory;
+import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,12 +70,12 @@ class RewardFactoryTest {
     }
 
     @Test
-    void testRewardFactoryInitialization() {
+    void testrewardFactoryInitialization() {
         assertNotNull(rewardFactory);
     }
 
     @Test
-    void givenTypePotion_whenCreate_thenReturnPotionReward() {
+    void givenTypePotion_whencreate_thenReturnPotionReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("potion");
         when(mockConfig.getString(path + "reward_item")).thenReturn("jump:1");
@@ -86,7 +87,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypeEffect_whenCreate_thenReturnEffectReward() {
+    void givenTypeEffect_whencreate_thenReturnEffectReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("effect");
         when(mockConfig.getString(path + "reward_item")).thenReturn("free_food");
@@ -98,7 +99,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypeCurrency_whenCreate_thenReturnCurrencyReward() {
+    void givenTypeCurrency_whencreate_thenReturnCurrencyReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("Currency");
         when(mockConfig.getString(path + "reward_item")).thenReturn("200");
@@ -109,7 +110,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypeExperience_whenCreate_thenReturnExperienceReward() {
+    void givenTypeExperience_whencreate_thenReturnExperienceReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("Experience");
         when(mockConfig.getString(path + "reward_item")).thenReturn("10");
@@ -120,7 +121,28 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypeItem_whenCreate_thenReturnItemReward() {
+    void test() {
+        ArrayList<ItemStack> itemList = new ArrayList<>();
+        String[] itemParts;
+        Material material;
+        int amount;
+
+        when(Bukkit.getItemFactory()).thenReturn(mock(ItemFactory.class));
+
+        itemParts = "apple:10".split(":");
+        try {
+            material = Material.valueOf(itemParts[0].toUpperCase());
+            amount = Integer.parseInt(itemParts[1].replace(":", ""));
+            itemList.add(new ItemStack(material, amount));
+        } catch (NullPointerException | NumberFormatException ignored) {
+        }
+
+        assertSame(Material.APPLE, itemList.get(0).getType());
+        assertEquals(10, itemList.get(0).getAmount());
+    }
+
+    @Test
+    void givenTypeItem_whencreate_thenReturnItemReward() {
         when(Bukkit.getItemFactory()).thenReturn(mock(ItemFactory.class));
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(true);
@@ -136,7 +158,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypePermission_whenCreate_thenReturnPermissionReward() {
+    void givenTypePermission_whencreate_thenReturnPermissionReward() {
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(false);
         when(mockConfig.isList(path + "reward_item")).thenReturn(true);
@@ -153,7 +175,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenTypeCommand_whenCreate_thenReturnCommandReward() {
+    void givenTypeCommand_whencreate_thenReturnCommandReward() {
         String path = "biome.plains.1";
         when(mockConfig.isString(path + "reward_item")).thenReturn(true);
         when(mockConfig.isList(path + "reward_item")).thenReturn(false);
@@ -166,7 +188,7 @@ class RewardFactoryTest {
     }
 
     @Test
-    void givenInvalidType_whenCreate_thenReturnNullReward() {
+    void givenInvalidType_whencreate_thenReturnNullReward() {
         String path = "biome.plains.1";
         when(mockConfig.getString(path + "reward_type")).thenReturn("currency");
         when(mockConfig.getString(path + "reward_item")).thenReturn("abc");

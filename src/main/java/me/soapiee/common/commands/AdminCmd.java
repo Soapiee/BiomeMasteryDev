@@ -247,18 +247,6 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private Biome validateBiome(CommandSender sender, String input){
-        Biome biome;
-        try {
-            biome = Biome.valueOf(input);
-        } catch (IllegalArgumentException error) {
-            sendMessage(sender, messageManager.getWithPlaceholder(Message.INVALIDBIOME, input));
-            return null;
-        }
-
-        return biome;
-    }
-
     private void updateProgress(OfflinePlayer target) {
         // if player is online, get their location, and update that biomelevel
         if (!target.isOnline()) return;
@@ -267,8 +255,9 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         Biome locBiome = onlinePlayer.getLocation().getBlock().getBiome();
         if (!configManager.isEnabledBiome(locBiome)) return;
 
+        Biome parentBiome = biomeDataManager.getBiomeData(locBiome).getBiome();
         BiomeLevel biomeLevel = playerDataManager.getPlayerData(onlinePlayer.getUniqueId()).getBiomeLevel(locBiome);
-        biomeLevel.updateProgress(locBiome);
+        biomeLevel.updateProgress(parentBiome);
     }
 
     private void resetPlayer(CommandSender sender, OfflinePlayer target) {
@@ -643,6 +632,23 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         else Utils.consoleMsg(message);
     }
 
+//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+    private Biome validateBiome(CommandSender sender, String input){
+        if (configManager.isBiomesGrouped())
+            if (configManager.getGroupNameAndParentMap().containsKey(input.toLowerCase()))
+                return configManager.getGroupNameAndParentMap().get(input);
+
+        Biome biome;
+        try {
+            biome = Biome.valueOf(input);
+        } catch (IllegalArgumentException error) {
+            sendMessage(sender, messageManager.getWithPlaceholder(Message.INVALIDBIOME, input));
+            return null;
+        }
+
+        return biome;
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         final List<String> results = new ArrayList<>();
@@ -687,6 +693,7 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
 
             case 3:
                 configManager.getEnabledBiomes().forEach(biome -> results.add(biome.name().toLowerCase()));
+                results.addAll(configManager.getGroupNameAndParentMap().keySet());
                 break;
 
             case 4:

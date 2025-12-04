@@ -45,45 +45,45 @@ public class PlayerFileStorage implements PlayerStorageHandler {
         createPlayerLevels();
     }
 
-    private void createPlayerLevels() {
-        for (Biome key : configManager.getEnabledBiomes()) {
-            playerData.getBiomesMap().put(key, new BiomeLevel(player, biomeDataManager.getBiomeData(key)));
-        }
-    }
-
-    @Override
-    public void readData() {
-        if (!file.exists()) {
-            createFile();
-            return;
-        }
-
-        contents = YamlConfiguration.loadConfiguration(file);
-
-        synchronized (fileLock) {
-            boolean updated = false;
-
-            for (Biome biome : configManager.getEnabledBiomes()) {
-                String biomeName = biome.name();
-
-                if (!contents.isSet(biomeName + ".Level") || !contents.isSet(biomeName + ".Progress")) {
-                    contents.set(biomeName + ".Level", 0);
-                    contents.set(biomeName + ".Progress", 0);
-                    updated = true;
-                } else {
-                    setBiomeLevelData(biome);
-                }
-            }
-
-            if (updated) {
-                try {
-                    contents.save(file);
-                } catch (IOException e) {
-                    customLogger.logToFile(e, "Failed to update missing biome data for " + player.getName());
-                }
-            }
-        }
-    }
+//    private void createPlayerLevels() {
+//        for (Biome key : configManager.getEnabledBiomes()) {
+//            playerData.getBiomesMap().put(key, new BiomeLevel(player, biomeDataManager.getBiomeData(key)));
+//        }
+//    }
+//
+//    @Override
+//    public void readData() {
+//        if (!file.exists()) {
+//            createFile();
+//            return;
+//        }
+//
+//        contents = YamlConfiguration.loadConfiguration(file);
+//
+//        synchronized (fileLock) {
+//            boolean updated = false;
+//
+//            for (Biome biome : configManager.getEnabledBiomes()) {
+//                String biomeName = biome.name();
+//
+//                if (!contents.isSet(biomeName + ".Level") || !contents.isSet(biomeName + ".Progress")) {
+//                    contents.set(biomeName + ".Level", 0);
+//                    contents.set(biomeName + ".Progress", 0);
+//                    updated = true;
+//                } else {
+//                    setBiomeLevelData(biome);
+//                }
+//            }
+//
+//            if (updated) {
+//                try {
+//                    contents.save(file);
+//                } catch (IOException e) {
+//                    customLogger.logToFile(e, "Failed to update missing biome data for " + player.getName());
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public void saveData(boolean async) {
@@ -160,6 +160,75 @@ public class PlayerFileStorage implements PlayerStorageHandler {
             localCopy.save(file);
         } catch (IOException e) {
             customLogger.logToFile(e, main.getMessageManager().getWithPlaceholder(Message.DATAERROR, playerName));
+        }
+    }
+
+
+    //    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+    @Override
+    public void readData() {
+        if (!file.exists()) {
+            createFile();
+            return;
+        }
+
+        contents = YamlConfiguration.loadConfiguration(file);
+
+        synchronized (fileLock) {
+            boolean updated = false;
+
+            for (Biome enabledBiomes : configManager.getEnabledBiomes()) {
+                String biomeName = enabledBiomes.name();
+                BiomeData biomeData = biomeDataManager.getBiomeData(enabledBiomes);
+
+                if (!contents.isSet(biomeName + ".Level") || !contents.isSet(biomeName + ".Progress")) {
+                    if (biomeData instanceof ChildData) continue;
+
+                    contents.set(biomeName + ".Level", 0);
+                    contents.set(biomeName + ".Progress", 0);
+                    updated = true;
+
+                } else {
+                    setBiomeLevelData(enabledBiomes);
+                }
+            }
+
+            if (updated) {
+                try {
+                    contents.save(file);
+                } catch (IOException e) {
+                    customLogger.logToFile(e, "Failed to update missing biome data for " + player.getName());
+                }
+            }
+        }
+    }
+
+    private void createPlayerLevels(){
+        if (configManager.isBiomesGrouped()){
+            for (Biome parentBiome : configManager.getParentAndChildrenMap().keySet()) {
+                playerData.getBiomesMap().put(parentBiome, new BiomeLevel(player, biomeDataManager.getBiomeData(parentBiome)));
+
+                if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
+                        ChatColor.GREEN + parentBiome.name() + " level setup");
+            }
+        }
+
+        for (Biome enabledBiome : configManager.getEnabledBiomes()){
+            if (playerData.getBiomesMap().containsKey(enabledBiome)) continue;
+
+            BiomeData biomeData = biomeDataManager.getBiomeData(enabledBiome);
+            BiomeLevel level;
+
+            if (biomeData instanceof SingularData){
+                level = new BiomeLevel(player, biomeData);
+            } else {
+                level = playerData.getBiomesMap().get(biomeData.getBiome());
+            }
+
+            if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
+                    ChatColor.GREEN + enabledBiome.name() + " level setup");
+            playerData.getBiomesMap().put(enabledBiome, level);
+
         }
     }
 }

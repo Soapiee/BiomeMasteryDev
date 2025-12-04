@@ -1,5 +1,6 @@
 package me.soapiee.common.listeners;
 
+import me.soapiee.common.logic.BiomeData;
 import me.soapiee.common.logic.BiomeLevel;
 import me.soapiee.common.logic.events.LevelUpEvent;
 import me.soapiee.common.logic.rewards.PendingReward;
@@ -17,6 +18,7 @@ import org.bukkit.event.Listener;
 public class LevelUpListener implements Listener {
 
     private final ConfigManager configManager;
+    private final BiomeDataManager biomeDataManager;
     private final MessageManager messageManager;
     private final PendingRewardsManager pendingRewardsManager;
     private final Logger logger;
@@ -25,6 +27,7 @@ public class LevelUpListener implements Listener {
         this.messageManager = messageManager;
         this.logger = logger;
         configManager = dataManager.getConfigManager();
+        biomeDataManager = dataManager.getBiomeDataManager();
         pendingRewardsManager = dataManager.getPendingRewardsManager();
     }
 
@@ -67,14 +70,29 @@ public class LevelUpListener implements Listener {
         return true;
     }
 
+//    private boolean playerInCorrectBiome(Player player, Biome correctBiome, Reward reward) {
+//        Biome playerBiome = player.getLocation().getBlock().getBiome();
+//
+//        if (!playerBiome.name().equalsIgnoreCase(correctBiome.name())) {
+//            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.NOTINBIOME, correctBiome.name(), reward.toString())));
+//            return false;
+//        }
+//        return true;
+//    }
+
+
+//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+
     private boolean playerInCorrectBiome(Player player, Biome correctBiome, Reward reward) {
-        Biome playerBiome = player.getLocation().getBlock().getBiome();
+        Biome playerLiteralBiome = player.getLocation().getBlock().getBiome();
+        BiomeData parentIfBiomeIsGrouped = biomeDataManager.getBiomeData(playerLiteralBiome);
+        Biome playerBiome = (parentIfBiomeIsGrouped == null) ? playerLiteralBiome : parentIfBiomeIsGrouped.getBiome();
+        String correctBiomeName = biomeDataManager.getBiomeData(correctBiome).getBiomeName();
 
         if (!playerBiome.name().equalsIgnoreCase(correctBiome.name())) {
-            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.NOTINBIOME, correctBiome.name(), reward.toString())));
+            player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.NOTINBIOME, correctBiomeName, reward.toString())));
             return false;
         }
         return true;
     }
-
 }

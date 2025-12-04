@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -80,5 +81,62 @@ class ConfigManagerTest {
         List<Biome> actualValue = configManager.createBiomeBlacklist(inputList);
 
         assertTrue(actualValue.contains(Biome.NETHER_WASTES));
+    }
+
+    @Test
+    void givenChildBiome_whenGetChildren_thenReturnChildList(){
+        Biome parentBiome = Biome.NETHER_WASTES;
+        Biome child1 = Biome.FOREST;
+        Biome child2 = Biome.FROZEN_RIVER;
+        Biome child3 = Biome.BAMBOO_JUNGLE;
+        Biome child4 = Biome.BEACH;
+
+        ArrayList<Biome> expectedList = new ArrayList<>(Arrays.asList(child1, child2, child3, child4));
+        configManager.getParentAndChildrenMap().put(parentBiome, expectedList);
+
+        Biome givenBiome = Biome.FOREST;
+
+        ArrayList<Biome> actualResult = configManager.getChildren(givenBiome);
+
+        assertNotNull(actualResult);
+        assertEquals(expectedList, actualResult);
+        assertTrue(actualResult.contains(givenBiome));
+    }
+
+    @Test
+    void givenParentBiome_whenGetChildren_thenReturnChildList(){
+        Biome parentBiome = Biome.NETHER_WASTES;
+        Biome child1 = Biome.FOREST;
+        Biome child2 = Biome.FROZEN_RIVER;
+        Biome child3 = Biome.BAMBOO_JUNGLE;
+        Biome child4 = Biome.BEACH;
+
+        ArrayList<Biome> expectedList = new ArrayList<>(Arrays.asList(child1, child2, child3, child4));
+        configManager.getParentAndChildrenMap().put(parentBiome, expectedList);
+
+        Biome givenBiome = Biome.NETHER_WASTES;
+
+        ArrayList<Biome> actualResult = configManager.getChildren(givenBiome);
+
+        assertNotNull(actualResult);
+        assertEquals(expectedList, actualResult);
+    }
+
+    @Test
+    void givenSingularBiome_whenGetChildren_thenReturnNull(){
+        Biome parentBiome = Biome.NETHER_WASTES;
+        Biome child1 = Biome.FOREST;
+        Biome child2 = Biome.FROZEN_RIVER;
+        Biome child3 = Biome.BAMBOO_JUNGLE;
+        Biome child4 = Biome.BEACH;
+
+        ArrayList<Biome> expectedList = new ArrayList<>(Arrays.asList(child1, child2, child3, child4));
+        configManager.getParentAndChildrenMap().put(parentBiome, expectedList);
+
+        Biome givenBiome = Biome.JUNGLE;
+
+        ArrayList<Biome> actualResult = configManager.getChildren(givenBiome);
+
+        assertNull(actualResult);
     }
 }

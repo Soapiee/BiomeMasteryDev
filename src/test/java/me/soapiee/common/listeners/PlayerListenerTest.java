@@ -4,6 +4,9 @@ import be.seeseemelk.mockbukkit.MockBukkit;
 import be.seeseemelk.mockbukkit.ServerMock;
 import be.seeseemelk.mockbukkit.WorldMock;
 import me.soapiee.common.BiomeMastery;
+import me.soapiee.common.logic.ChildData;
+import me.soapiee.common.logic.ParentData;
+import me.soapiee.common.logic.SingularData;
 import me.soapiee.common.manager.*;
 import me.soapiee.common.util.Logger;
 import me.soapiee.common.util.PlayerCache;
@@ -11,6 +14,9 @@ import org.bukkit.block.Biome;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -121,7 +127,7 @@ public final class PlayerListenerTest {
         Biome prevBiome = Biome.PLAINS;
         Biome newBiome = Biome.PLAINS;
 
-//        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
         boolean actualValue = playerListener.biomeHasChanged(prevBiome, newBiome);
 
         assertFalse(actualValue);
@@ -131,7 +137,7 @@ public final class PlayerListenerTest {
     void givenUniqueBiomes_whenBiomeHasChanged_thenReturnTrue() {
         Biome prevBiome = Biome.OCEAN;
         Biome newBiome = Biome.FOREST;
-//        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
 
         boolean actualValue = playerListener.biomeHasChanged(prevBiome, newBiome);
 
@@ -139,25 +145,53 @@ public final class PlayerListenerTest {
     }
 
     @Test
-    void givenUniqueBiomes_whenLocationHasChanged_thenReturnTrue() {
+    void givenTwoChildBiomes_whenBiomeHasChanged_thenReturnFalse() {
+        Biome prevBiome = Biome.OCEAN;
+        Biome newBiome = Biome.FOREST;
+        ChildData mockChildData = mock(ChildData.class);
+        ParentData mockParentData = mock(ParentData.class);
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mockChildData);
+        when(mockChildData.getParentData()).thenReturn(mockParentData);
+        when(mockConfigManager.getChildren(prevBiome)).thenReturn(new ArrayList<>(Arrays.asList(prevBiome, Biome.COLD_OCEAN, Biome.DEEP_OCEAN, newBiome)));
+
+        boolean actualValue = playerListener.biomeHasChanged(prevBiome, newBiome);
+
+        assertFalse(actualValue);
+    }
+
+    @Test
+    void givenParentBiome_whenBiomeHasChanged_thenReturnFalse() {
+        Biome prevBiome = Biome.OCEAN;
+        Biome newBiome = Biome.FOREST;
+        ParentData mockParentData = mock(ParentData.class);
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mockParentData);
+        when(mockConfigManager.getChildren(prevBiome)).thenReturn(new ArrayList<>(Arrays.asList(Biome.COLD_OCEAN, Biome.DEEP_OCEAN, newBiome)));
+
+        boolean actualValue = playerListener.biomeHasChanged(prevBiome, newBiome);
+
+        assertFalse(actualValue);
+    }
+
+    @Test
+    void givenUniqueBiomes_whenHasLocationChanged_thenReturnTrue() {
         WorldMock world = server.addSimpleWorld("world");
         Biome prevBiome = Biome.PLAINS;
         Biome newBiome = Biome.FOREST;
-//        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
 
-        boolean result = playerListener.locationHasChanged(world, world, prevBiome, newBiome);
+        boolean result = playerListener.hasLocationChanged(world, world, prevBiome, newBiome);
 
         assertTrue(result);
     }
 
     @Test
-    void givenIdenticalBiome_whenLocationHasChanged_thenReturnFalse() {
+    void givenIdenticalBiome_whenHasLocationChanged_thenReturnFalse() {
         WorldMock world = server.addSimpleWorld("world");
         Biome prevBiome = Biome.PLAINS;
         Biome newBiome = Biome.PLAINS;
-//        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
+        when(mockBiomeDataManager.getBiomeData(prevBiome)).thenReturn(mock(SingularData.class));
 
-        boolean result = playerListener.locationHasChanged(world, world, prevBiome, newBiome);
+        boolean result = playerListener.hasLocationChanged(world, world, prevBiome, newBiome);
 
         assertFalse(result);
     }

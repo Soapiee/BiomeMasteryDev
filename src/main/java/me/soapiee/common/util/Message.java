@@ -47,6 +47,18 @@ public enum Message {
     BIOMEDETAILEDMAX("player_biome_details_max", "#01d54a--------- %player_name%s %biome% Biome ---------"
             + "\n&7Level: #01d54a%player_level%&7/%biome_max_level%"
             + "\n&7Rewards:"),
+
+    //    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+    BIOMEDETAILEDFORMATWITHCHILD("player_group_biome_details_max", "#01d54a--------- %player_name%s %biome% Biome ---------"
+            + "\n&7Level: #01d54a%player_level%&7/%biome_max_level%"
+            + "\n&7Progress: #01d54a%player_progress%&7/%target_duration_formatted%"
+            + "\n&7Biomes: #01d54a%grouped_biomes%"
+            + "\n&7Rewards:"),
+    BIOMEDETAILEDMAXWITHCHILD("player_group_biome_details_max", "#01d54a--------- %player_name%s %biome% Biome ---------"
+            + "\n&7Level: #01d54a%player_level%&7/%biome_max_level%"
+            + "\n&7Biomes: #01d54a%grouped_biomes%"
+            + "\n&7Rewards:"),
+
     BIOMEREWARDFORMAT("player_biome_reward_max", "#01d54a> &7Lvl %level%: #01d54a%reward% &7- %reward_status%"),
     REWARDUNCLAIMED("reward_status_unclaimed", "&5Unclaimed"),
     REWARDCLAIMED("reward_status_claimed", "&5Claimed"),

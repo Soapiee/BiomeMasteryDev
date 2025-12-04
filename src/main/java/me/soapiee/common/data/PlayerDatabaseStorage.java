@@ -48,26 +48,26 @@ public class PlayerDatabaseStorage implements PlayerStorageHandler{
         createPlayerLevels();
     }
 
-    private void createPlayerLevels(){
-        for (Biome key : configManager.getEnabledBiomes()) {
-            playerData.getBiomesMap().put(key, new BiomeLevel(player, biomeDataManager.getBiomeData(key)));
-        }
-    }
-
-    @Override
-    public void readData() {
-        for (Biome key : configManager.getEnabledBiomes()) {
-            getPlayerData(key.name(), (player2, results, error) -> {
-                if (error != null) {
-                    logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
-                    return;
-                }
-
-                playerData.getBiomesMap().get(key).setLevel(results.getLevel());
-                playerData.getBiomesMap().get(key).setProgress(results.getProgress());
-            });
-        }
-    }
+//    private void createPlayerLevels(){
+//        for (Biome key : configManager.getEnabledBiomes()) {
+//            playerData.getBiomesMap().put(key, new BiomeLevel(player, biomeDataManager.getBiomeData(key)));
+//        }
+//    }
+//
+//    @Override
+//    public void readData() {
+//        for (Biome key : configManager.getEnabledBiomes()) {
+//            getPlayerData(key.name(), (player2, results, error) -> {
+//                if (error != null) {
+//                    logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
+//                    return;
+//                }
+//
+//                playerData.getBiomesMap().get(key).setLevel(results.getLevel());
+//                playerData.getBiomesMap().get(key).setProgress(results.getProgress());
+//            });
+//        }
+//    }
 
     @Override
     public void saveData(boolean async) {
@@ -143,4 +143,54 @@ public class PlayerDatabaseStorage implements PlayerStorageHandler{
             }
         });
     }
+
+
+//    =-=-=-=-=-=-=-=-=-=-=-=-= BIOME DATA POST GROUP UPDATE =-=-=-=-=-=-=-=-=-=-=-=-=
+    @Override
+    public void readData() {
+        for (BiomeData biomeData : biomeDataManager.getBiomeDataMap().values()) {
+            if (biomeData instanceof ChildData) continue;
+
+            Biome key = biomeData.getBiome();
+            getPlayerData(key.name(), (player2, results, error) -> {
+                if (error != null) {
+                    logger.logToPlayer((CommandSender) player2, error, Utils.colour(messageManager.get(Message.DATAERRORPLAYER)));
+                    return;
+                }
+
+                playerData.getBiomesMap().get(key).setLevel(results.getLevel());
+                playerData.getBiomesMap().get(key).initialiseProgress(results.getProgress());
+            });
+        }
+    }
+
+    private void createPlayerLevels(){
+        if (configManager.isBiomesGrouped()){
+            for (Biome parentBiome : configManager.getParentAndChildrenMap().keySet()) {
+                playerData.getBiomesMap().put(parentBiome, new BiomeLevel(player, biomeDataManager.getBiomeData(parentBiome)));
+
+                if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
+                        ChatColor.GREEN + parentBiome.name() + " level setup");
+            }
+        }
+
+        for (Biome enabledBiome : configManager.getEnabledBiomes()){
+            if (playerData.getBiomesMap().containsKey(enabledBiome)) continue;
+
+            BiomeData biomeData = biomeDataManager.getBiomeData(enabledBiome);
+            BiomeLevel level;
+
+            if (biomeData instanceof SingularData){
+                level = new BiomeLevel(player, biomeData);
+            } else {
+                level = playerData.getBiomesMap().get(biomeData.getBiome());
+            }
+
+            if (configManager.isDebugMode()) Utils.debugMsg(player.getName(),
+                    ChatColor.GREEN + enabledBiome.name() + " level setup");
+            playerData.getBiomesMap().put(enabledBiome, level);
+
+        }
+    }
+
 }

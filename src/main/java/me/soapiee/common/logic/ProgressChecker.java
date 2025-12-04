@@ -41,7 +41,8 @@ public class ProgressChecker extends BukkitRunnable {
             BiomeLevel playerLevel = playerDataManager.getPlayerData(player.getUniqueId()).getBiomeLevel(playerBiome);
             if (playerLevel.isMaxLevel()) continue;
 
-            playerLevel.updateProgress(playerBiome);
+            Biome playerBiomeParent = biomeDataManager.getBiomeData(playerBiome).getBiome();
+            playerLevel.updateProgress(playerBiomeParent);
         }
     }
 }
