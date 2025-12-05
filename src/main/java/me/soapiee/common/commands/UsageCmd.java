@@ -416,7 +416,7 @@ public class UsageCmd implements CommandExecutor, TabCompleter {
     private void openGUI(Player player) {
         //TODO: Open gui for player
         // updateProgress((Player) sender);
-        sendMessage(player, messageManager.get(Message.GUIOPENED));
+        // sendMessage(player, messageManager.get(Message.GUIOPENED));
     }
 
 

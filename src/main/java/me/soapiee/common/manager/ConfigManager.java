@@ -21,7 +21,6 @@ import java.util.List;
 public class ConfigManager {
 
     private FileConfiguration config;
-    private final Logger logger;
 
     @Getter @Setter private boolean databaseEnabled;
     @Getter private boolean debugMode;
@@ -35,7 +34,6 @@ public class ConfigManager {
 
     public ConfigManager(FileConfiguration config, Logger logger) {
         this.config = config;
-        this.logger = logger;
         databaseEnabled = config.getBoolean("database.enabled", false);
         debugMode = config.getBoolean("debug_mode", false);
         updateNotif = config.getBoolean("settings.plugin_update_notification", true);

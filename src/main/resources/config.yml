@@ -106,6 +106,7 @@ biomes:
       target_duration: 60 # seconds
       reward_type: command
       reward_item: give %player% apple 2 # use placeholder %player%
+      reward_description: '&dCustom &6command' # 'reward_description' only valid on command reward types
     '6':
       target_duration: 60 # seconds
       reward_type: experience

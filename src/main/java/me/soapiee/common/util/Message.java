@@ -5,13 +5,13 @@ import lombok.Getter;
 public enum Message {
 
     //                    --->    GENERAL MESSAGES    <---
-    PREFIX("messages_prefix", "&5&l[BM]"),
+    PREFIX("messages_prefix", "&5&l[BM]"), // Replace to "" if you want no prefix
     MUSTBEPLAYERERROR("must_be_player", "&cYou must be a player to use this command"),
     CONSOLEUSAGEERROR("console_usage_error", "&cYou must enter a players name"),
     NOPERMISSION("no_permission", "&cYou do not have permission to use this command"),
     PLAYERNOTFOUND("player_not_found", "&cPlayer not found"),
     DATAERROR("data_error", "&c%player_name%'s data could not be loaded or changed at this time"),
-    DATAERRORPLAYER("data_error_player", "&cThere was an error loading/saving your data. Please re-log. "
+    DATAERRORPLAYER("data_error_player", "&cThere was an error loading/saving your data. Please re-log."
             + "\nIf this error persists, contact support immediately"),
     INVFULL("player_inventory_full", "&cYour reward dropped on the floor because your inventory is full"),
     ADMINSETLEVEL("admin_set_level", "&eYour &a%biome% &elevel has been set to level &a%level% &eby an admin"),
@@ -23,7 +23,6 @@ public enum Message {
     ADMINRESETALL("admin_reset_all", "&eAn admin reset all of your data"),
     ADMINRESETBIOME("admin_reset_biome", "&eAn admin reset your &c%biome% &edata"),
 
-
     //                    --->    PLAYER CMD MESSAGES    <---
     PLAYERHELP("player_help", "#01d54a--------- BiomeMastery Help ---------"
             + "\n#01d54aKey: [] = Optional | <> = Required"
@@ -34,7 +33,6 @@ public enum Message {
     INVALIDNUMBER("player_invalid_number", "&c%input% is not a valid number"),
     LEVELOUTOFBOUNDARY("player_input_outofboundary", "&c%level% must be within 0-%max_level%"),
     BIOMEINFODISABLED("player_biome_disabled", "&cThe biome %biome% is disabled"),
-    GUIOPENED("player_gui_opened", "&aGUI Opened"),
     REWARDNOTACHIEVED("player_reward_not_available", "&cYou have not achieved this level yet. You are level %current_level%"),
     BIOMEBASICINFOHEADER("player_biome_info_header", "#01d54a--------- %player_name%s Biome Info ---------"),
     BIOMEBASICINFOFORMAT("player_biome_info_format", "&a%biome% &7[Lvl &a%player_level%&7/%biome_max_level% : &a%player_progress%&7/%target_duration_formatted%]"),
@@ -51,18 +49,17 @@ public enum Message {
     REWARDUNCLAIMED("reward_status_unclaimed", "&5Unclaimed"),
     REWARDCLAIMED("reward_status_claimed", "&5Claimed"),
     REWARDCLAIMINBIOME("reward_claimable_in_biome", "&5Claimable when in the %biome% biome"),
-    REWARDACTIVATE("reward_status_activate", "&5Click to activate"),
-    REWARDDEACTIVATE("reward_status_deactivate", "&5Click to de-activate"),
+    REWARDACTIVATE("reward_status_activate", "&5Use &l/biome reward &5to activate"),
+    REWARDDEACTIVATE("reward_status_deactivate", "&5Use &l/biome reward &5to de-activate"),
     CMDONCOOLDOWN("command_on_cooldown", "&cYou must wait &e%cooldown% &cbefore you can use this command again"),
     LEVELLEDUP("levelled_up", "&aYou levelled up to level &e%level% &ain the %biome% &e&abiome"),
     REWARDCONFLICT("reward_conflict", "&cThis reward conflicts"),
     REWARDACTIVATED("reward_activated", "&aYou activated the reward &e%reward%"),
     REWARDDEACTIVATED("reward_deactivated", "&aYou de-activated the reward &e%reward%"),
     REWARDSDEACTIVATED("all_rewards_deactivated", "&aAll of your %biome% biome rewards were deactivated because you left the biome"),
-    PENDINGREWARDRECIEVED("pending_reward_recieved", "&aYou levelled up to level &e%level% &ain the &e%biome% &abiome whilst you were offline. You've received &e%reward%"),
+    PENDINGREWARDRECIEVED("pending_reward_received", "&aYou levelled up to level &e%level% &ain the &e%biome% &abiome whilst you were offline. You've received &e%reward%"),
     REWARDALREADYCLAIMED("reward_already_claimed", "&cYou've already claimed this reward and you can only claim it once."),
     NOTINBIOME("not_inside_biome", "&cYou must be inside the &e%biome% &cbiome to activate the &e%reward% &creward"),
-
 
     //                    --->    ADMIN CMD MESSAGES    <---
     UPDATEAVAILABLE("update_available", "&aThere is an update available"),

@@ -13,10 +13,12 @@ import java.util.ArrayList;
 public class CommandReward extends Reward {
 
     private final ArrayList<String> commandList;
+    private final String description;
 
-    public CommandReward(BiomeMastery main, ArrayList<String> commandList) {
+    public CommandReward(BiomeMastery main, ArrayList<String> commandList, String description) {
         super(RewardType.COMMAND, true, main.getMessageManager());
         this.commandList = commandList;
+        this.description = description;
     }
 
     @Override
@@ -29,19 +31,6 @@ public class CommandReward extends Reward {
 
     @Override
     public String toString() {
-//        StringBuilder builder = new StringBuilder();
-//        int i = 1;
-//
-//        builder.append(type.toString().toLowerCase()).append("s: ");
-//        for (String permission : commandList) {
-//            builder.append(permission);
-//            if (commandList.size() > i) builder.append(", ");
-//            i++;
-//        }
-//
-//        return builder.toString();
-
-        //TODO Add reward description section to config
-        return "Custom commands";
+        return description;
     }
 }

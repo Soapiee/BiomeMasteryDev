@@ -231,7 +231,9 @@ public class RewardFactory {
             return new NullReward();
         }
 
-        return new CommandReward(main, commandList);
+        String description = config.getString(path + "reward_description", "undefined");
+
+        return new CommandReward(main, commandList, description);
     }
 
     private void createLog(String path, Exception error, String invalidObject) {
