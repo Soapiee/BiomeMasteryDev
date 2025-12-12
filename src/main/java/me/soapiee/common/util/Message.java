@@ -56,8 +56,9 @@ public enum Message {
     REWARDCONFLICT("reward_conflict", "&cYou cannot apply the %conflicting_effect% &cwith the %effect% &calready active"),
     REWARDACTIVATED("reward_activated", "&aYou activated the reward &e%reward%"),
     REWARDDEACTIVATED("reward_deactivated", "&aYou de-activated the reward &e%reward%"),
+    REWARDRECEIVED("reward_received", "&aYou received the reward &e%reward%"),
     REWARDSDEACTIVATED("all_rewards_deactivated", "&aAll of your %biome% biome rewards were deactivated because you left the biome"),
-    PENDINGREWARDRECIEVED("pending_reward_received", "&aYou levelled up to level &e%level% &ain the &e%biome% &abiome whilst you were offline. You've received &e%reward%"),
+    PENDINGREWARDRECIEVED("pending_reward_received", "&aYou levelled up to level &e%level% &ain the &e%biome% &abiome whilst you were offline."),
     REWARDALREADYCLAIMED("reward_already_claimed", "&cYou've already claimed this reward and you can only claim it once."),
     NOTINBIOME("not_inside_biome", "&cYou must be inside the &e%biome% &cbiome to activate the &e%reward% &creward"),
 

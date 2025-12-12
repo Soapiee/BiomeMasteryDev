@@ -18,8 +18,8 @@ public class ExperienceReward extends Reward {
 
     @Override
     public void give(Player player) {
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDRECEIVED, toString())));
         player.giveExpLevels(amount);
-        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     @Override

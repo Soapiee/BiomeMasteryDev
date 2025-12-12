@@ -6,7 +6,6 @@ import me.soapiee.common.logic.events.LevelUpEvent;
 import me.soapiee.common.logic.rewards.Reward;
 import me.soapiee.common.util.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Biome;
 import org.jetbrains.annotations.NotNull;
@@ -50,9 +49,8 @@ public class BiomeLevel {
             long toAdd = ChronoUnit.SECONDS.between(entryTime, LocalDateTime.now());
             entryTime = LocalDateTime.now();
 
-            Utils.debugMsg(player.getName(),
-                    ChatColor.GREEN.toString() + toAdd + " seconds added to biome " + biomeData.getBiome().name());
-
+//            Utils.debugMsg(player.getName(),
+//                    ChatColor.GREEN.toString() + toAdd + " seconds added to biome " + biomeData.getBiome().name());
             progress += toAdd;
             checkLevelUp();
         }

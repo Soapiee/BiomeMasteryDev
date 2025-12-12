@@ -88,8 +88,7 @@ public class MessageManager {
         if (contents.isSet(path)) {
             String text = ((contents.isList(path)) ? String.join("\n", contents.getStringList(path)) : contents.getString(path));
 
-            if (text.isEmpty()) return null;
-            return getPrefix(messageEnum) + text;
+            return text.isEmpty() ? null : getPrefix(messageEnum) + text;
         } else {
             if (defaultText.contains("\n")) {
                 String[] list;
@@ -161,7 +160,7 @@ public class MessageManager {
 
         return message.replace("%level%", String.valueOf(level))
                 .replace("%reward%", reward.toString())
-                .replace("%biome%", string)
+                .replace("%biome%", Utils.capitalise(string))
                 .replace("%reward_status%", string);
     }
 

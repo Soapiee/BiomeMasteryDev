@@ -24,9 +24,9 @@ public class PotionReward extends Reward {
 
     @Override
     public void give(Player player) {
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
         playerDataManager.getPlayerData(player.getUniqueId()).addActiveReward(this);
         player.addPotionEffect(potion);
-        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     public void remove(Player player){

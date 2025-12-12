@@ -37,7 +37,7 @@ public class ConfigManager {
         databaseEnabled = config.getBoolean("database.enabled", false);
         debugMode = config.getBoolean("debug_mode", false);
         updateNotif = config.getBoolean("settings.plugin_update_notification", true);
-        updateInterval = config.getInt("settings.update_interval", 60);
+        updateInterval = Math.max(config.getInt("settings.update_interval", 60), 1);
 
         enabledWorlds.addAll(setUpEnabledWords());
         enabledBiomes.addAll(setUpEnabledBiomes());

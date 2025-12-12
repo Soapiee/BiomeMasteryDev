@@ -20,10 +20,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.block.CommandBlock;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -245,11 +242,13 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
             case "removeprogress":
                 removeProgress(sender, target, biomeLevel, inputValue);
                 break;
+            default:
+                sendHelpMessage(sender, label);
         }
         return true;
     }
 
-    private Biome validateBiome(CommandSender sender, String input){
+    private Biome validateBiome(CommandSender sender, String input) {
         Biome biome;
         try {
             biome = Biome.valueOf(input);
@@ -297,7 +296,9 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         sendMessage(sender, messageManager.getWithPlaceholder(Message.RESETPLAYER, target.getName()));
         if (target.isOnline()) {
             playerData.clearActiveRewards();
-            sendMessage(target.getPlayer(), messageManager.get(Message.ADMINRESETALL));
+
+            if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != target.getPlayer())
+                sendMessage(target.getPlayer(), messageManager.get(Message.ADMINRESETALL));
         }
 
         pendingRewardsManager.removeAll(target.getUniqueId());
@@ -308,7 +309,9 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
 
         if (player.isOnline()) {
             removeActiveRewards(biomeLevel.getLevel(), 0, player, biomeLevel.getBiome());
-            sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINRESETBIOME, biomeName));
+
+            if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINRESETBIOME, biomeName));
         }
 
         biomeLevel.reset();
@@ -344,16 +347,19 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         if (biomeLevel.setLevel(inputValue) != -1) {
             message = Message.LEVELSET;
 
+            if (player.isOnline())
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINSETLEVEL, inputValue, biomeName));
+
+
             if (oldLevel < inputValue) giveRewards(oldLevel, inputValue, player, biomeLevel);
             if (oldLevel > inputValue) {
                 removeActiveRewards(oldLevel, inputValue, player, biome);
                 UUID uuid = player.getUniqueId();
-                if (pendingRewardsManager.has(uuid))
+                if (pendingRewardsManager.has(uuid)) {
                     removePendingRewards(uuid, pendingRewardsManager.get(uuid), biome, inputValue);
+                }
             }
-
-            if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINSETLEVEL, inputValue, biomeName));
         }
 
         sendMessage(sender, messageManager.getWithPlaceholder(
@@ -367,23 +373,16 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         Message message = Message.LEVELADDERROR;
         if (inputValue > 0 && biomeLevel.setLevel(newLevel) != -1) {
             message = Message.LEVELADDED;
-            giveRewards(oldLevel, newLevel, player, biomeLevel);
 
             if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINADDEDLEVEL, inputValue, biomeLevel.getBiomeName()));
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINADDEDLEVEL, inputValue, biomeLevel.getBiomeName()));
+
+            giveRewards(oldLevel, newLevel, player, biomeLevel);
         }
 
         sendMessage(sender, messageManager.getWithPlaceholder(
                 message, player.getName(), inputValue, biomeLevel.getBiomeName()));
-    }
-
-    private void giveRewards(int oldLevel, int newLevel, OfflinePlayer player, BiomeLevel biomeLevel) {
-        for (int i = oldLevel; i <= newLevel; i++) {
-            if (i == oldLevel) continue;
-
-            LevelUpEvent event = new LevelUpEvent(player, i, biomeLevel);
-            Bukkit.getPluginManager().callEvent(event);
-        }
     }
 
     private void removeLevel(CommandSender sender, OfflinePlayer player, BiomeLevel biomeLevel, int inputValue) {
@@ -394,10 +393,12 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         Message message = Message.LEVELREMOVEERROR;
         if (biomeLevel.setLevel(newLevel) != -1) {
             message = Message.LEVELREMOVED;
-            removeActiveRewards(oldLevel, newLevel, player, biomeLevel.getBiome());
 
             if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINREMOVEDLEVEL, inputValue, biomeLevel.getBiomeName()));
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINREMOVEDLEVEL, inputValue, biomeLevel.getBiomeName()));
+
+            removeActiveRewards(oldLevel, newLevel, player, biomeLevel.getBiome());
         }
 
         sendMessage(sender, messageManager.getWithPlaceholder(
@@ -407,6 +408,15 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
         if (pendingRewardsManager.has(uuid))
             removePendingRewards(uuid, pendingRewardsManager.get(uuid), biomeLevel.getBiome(), newLevel);
         if (wasMaxLevel) biomeLevel.setEntryTime(LocalDateTime.now());
+    }
+
+    private void giveRewards(int oldLevel, int newLevel, OfflinePlayer player, BiomeLevel biomeLevel) {
+        for (int i = oldLevel; i <= newLevel; i++) {
+            if (i == oldLevel) continue;
+
+            LevelUpEvent event = new LevelUpEvent(player, i, biomeLevel);
+            Bukkit.getPluginManager().callEvent(event);
+        }
     }
 
     private void removePendingRewards(UUID uuid, ArrayList<PendingReward> rewards, Biome biome, int newLevel) {
@@ -452,7 +462,8 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
 
         if (outcome >= 0)
             if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINSETPROGRESS, inputValue, biomeLevel.getBiomeName()));
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINSETPROGRESS, inputValue, biomeLevel.getBiomeName()));
 
         sendMessage(sender, messageManager.getWithPlaceholder(
                 message, player.getName(), inputValue, biomeLevel.getBiomeName()));
@@ -469,7 +480,8 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
 
         if (outcome >= 0)
             if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINADDEDPROGRESS, inputValue, biomeLevel.getBiomeName()));
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINADDEDPROGRESS, inputValue, biomeLevel.getBiomeName()));
 
         sendMessage(sender, messageManager.getWithPlaceholder(
                 message, player.getName(), inputValue, biomeLevel.getBiomeName()));
@@ -484,7 +496,8 @@ public class AdminCmd implements CommandExecutor, TabCompleter {
 
         if (outcome >= 0)
             if (player.isOnline())
-                sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINREMOVEDPROGRESS, inputValue, biomeLevel.getBiomeName()));
+                if (sender instanceof ConsoleCommandSender || sender instanceof Player && sender != player.getPlayer())
+                    sendMessage(player.getPlayer(), messageManager.getWithPlaceholder(Message.ADMINREMOVEDPROGRESS, inputValue, biomeLevel.getBiomeName()));
 
         sendMessage(sender, messageManager.getWithPlaceholder(
                 message, player.getName(), inputValue, biomeLevel.getBiomeName()));
