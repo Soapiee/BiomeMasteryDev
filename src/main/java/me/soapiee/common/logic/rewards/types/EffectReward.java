@@ -38,9 +38,9 @@ public class EffectReward extends Reward {
             return;
         }
 
+        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
         effect.activate(player);
         playerData.addActiveReward(this);
-        player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(Message.REWARDACTIVATED, toString())));
     }
 
     public void remove(Player player) {

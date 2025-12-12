@@ -117,9 +117,9 @@ public class PendingRewardsManager {
         UUID uuid = player.getUniqueId();
 
         for (PendingReward reward : get(uuid)) {
-            reward.getReward().give(player);
             player.sendMessage(Utils.colour(messageManager.getWithPlaceholder(
                     Message.PENDINGREWARDRECIEVED, reward.getLevel(), reward.getReward(), reward.getBiome())));
+            reward.getReward().give(player);
         }
     }
 

@@ -36,8 +36,19 @@ public class DataManager {
 
         playerDataManager = new PlayerDataManager();
         configManager = new ConfigManager(mainConfig, logger);
+        checkDirectory(main);
         cooldownManager = new CmdCooldownManager(main, mainConfig.getInt("settings.command_cooldown", 3));
         pendingRewardsManager = new PendingRewardsManager(main, biomeDataManager);
+    }
+
+    private void checkDirectory(BiomeMastery main) {
+        if (Files.isDirectory(Paths.get(main.getDataFolder() + File.separator + "Data"))) return;
+
+        try {
+            Files.createDirectories(Paths.get(main.getDataFolder() + File.separator + "Data"));
+        } catch (IOException e) {
+            main.getCustomLogger().logToFile(e, ChatColor.RED + "Data folder could not be created");
+        }
     }
 
     public void initialise(BiomeMastery main) throws IOException {
@@ -95,7 +106,7 @@ public class DataManager {
         progressChecker = new ProgressChecker(main, this);
     }
 
-    public void saveAll(){
+    public void saveAll() {
         playerDataManager.saveAll(false);
         cooldownManager.save();
         pendingRewardsManager.save();
